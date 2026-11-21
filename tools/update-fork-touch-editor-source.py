@@ -20,7 +20,8 @@ IDENTIFIER = "io.github.sky9662.bcd-games.touch-editor"
 def request(url):
     headers = {"Accept": "application/vnd.github+json", "User-Agent": "BCD-Touch-Editor-Feed"}
     token = os.environ.get("GH_TOKEN")
-    if token: headers["Authorization"] = f"Bearer {token}"
+    if token and url.startswith("https://api.github.com/"):
+        headers["Authorization"] = f"Bearer {token}"
     return Request(url, headers=headers)
 
 def previous():
