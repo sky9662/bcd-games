@@ -8,7 +8,6 @@ on:
   workflow_dispatch:
   push:
     branches: [feature/turing-complete-fex-ipa]
-    paths: [".github/workflows/build-ipa.yml"]
 
 # A workflow-file push starts the IPA build after touch-test-only commits.
 # A push and a manual dispatch seconds apart used to start two parallel
@@ -1269,10 +1268,31 @@ jobs:
           path: FEX/build-arm64ec
           key: fex-arm64ec-${{ steps.fexrev.outputs.sha }}-v2
 
-      - name: Build xtajit64.dll (FEX fixes, AVX opt-in)
-        if: env.MINGW_OK == '1'
-        continue-on-error: true
+      # This is a Turing FEX diagnostic build: a fallback to the committed
+      # unpatched DLL must never be reported as a successful test IPA.
+      - name: Require ARM64EC toolchain for Turing FEX
+        run: |
+          if [ "${MINGW_OK:-}" != "1" ]; then
+            echo "::error::ARM64EC toolchain unavailable; refusing to ship an unpatched IPA"
+            exit 1
+          fi
+
+      - name: Build xtajit64.dll (Turing mapped-exec recheck)
         run: bash tools/build-xtajit64.sh
+
+      - name: Verify Turing FEX patch is present in shipped DLL
+        run: |
+          for dll in app/Madeira/arm64ec-windows/xtajit64.dll app/Madeira/arm64ec-windows/xtajit64-avx.dll; do
+            if [ ! -s "$dll" ]; then
+              echo "::error::Missing built FEX module: $dll"
+              exit 1
+            fi
+            if ! LC_ALL=C grep -aFq '[tc-exec-recheck]' "$dll"; then
+              echo "::error::Unpatched FEX module: $dll (diagnostic marker absent)"
+              exit 1
+            fi
+            echo "::notice::verified Turing FEX marker in $dll"
+          done
 
       - name: Save FEX ARM64EC build
         if: steps.fexeccache.outputs.cache-hit != 'true' && hashFiles('FEX/build-arm64ec/Bin/libarm64ecfex.dll') != ''
