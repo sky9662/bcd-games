@@ -1,0 +1,39 @@
+name: Update SideStore touch editor source
+on:
+  release:
+    types: [published]
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/update-touch-editor-source.yml
+      - tools/update-fork-touch-editor-source.py
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: github.repository == 'sky9662/bcd-games'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Generate feed from the latest published test IPA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch origin sidestore-feed
+          python3 tools/update-fork-touch-editor-source.py --output "$RUNNER_TEMP/source.json"
+      - name: Update dedicated source branch
+        run: |
+          git switch sidestore-feed
+          cp "$RUNNER_TEMP/source.json" source.json
+          git add source.json
+          if ! git diff --cached --quiet; then
+            git -c user.name="github-actions[bot]" \
+                -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+                commit -m "chore: update BCD test SideStore source"
+            git push origin HEAD:sidestore-feed
+          fi
