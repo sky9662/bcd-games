@@ -53,12 +53,18 @@ extension BCDTouchInput {
 @MainActor protocol BCDTouchArranging: AnyObject {
     func select(_ id: UUID?)
     func selectMany(_ ids: Set<UUID>)
+    func beginDrag(_ id: UUID)
+    func drag(_ id: UUID, delta: CGSize, screen: CGSize)
+    func endDrag(_ id: UUID, moved: Bool)
     func move(_ id: UUID, x: Double, y: Double)
 }
 
 extension BCDTouchArranging {
     /// Keeps third-party and preview adapters compatible with single selection.
     func selectMany(_ ids: Set<UUID>) { select(ids.count == 1 ? ids.first : nil) }
+    func beginDrag(_ id: UUID) { select(id) }
+    func drag(_ id: UUID, delta: CGSize, screen: CGSize) {}
+    func endDrag(_ id: UUID, moved: Bool) { if !moved { select(id) } }
 }
 
 // MARK: - Colours
@@ -191,7 +197,8 @@ struct BCDTouchControl: View, Equatable {
     @State private var down = false
     @State private var direction = -1
     @State private var vector = CGSize.zero
-    @State private var dragBase: CGPoint?
+    @State private var dragStarted = false
+    @State private var dragMoved = false
 
     nonisolated static func == (a: BCDTouchControl, b: BCDTouchControl) -> Bool {
         a.item == b.item && a.screen == b.screen && a.layoutScale == b.layoutScale && a.opacity == b.opacity
@@ -239,20 +246,25 @@ struct BCDTouchControl: View, Equatable {
         vector = .zero
     }
 
-    /// Editing: touch a control to select it, drag it to move it.
+    /// A tap selects only this control. Dragging a member keeps its group selected.
     private var editDrag: some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
                 guard editing, let arranging else { return }
-                arranging.select(item.id)
-                if item.locked { return }   // selected to unlock it, resize nothing, move nothing
-                if dragBase == nil { dragBase = CGPoint(x: item.x, y: item.y) }
-                let base = dragBase ?? .zero
-                arranging.move(item.id,
-                               x: BCDTouchGeometry.clampPlace(Double(base.x) + Double(value.translation.width / screen.width)),
-                               y: BCDTouchGeometry.clampPlace(Double(base.y) + Double(value.translation.height / screen.height)))
+                if !dragStarted {
+                    dragStarted = true
+                    arranging.beginDrag(item.id)
+                }
+                if item.locked { return }  // A locked control cannot move its group.
+                guard hypot(value.translation.width, value.translation.height) > 4 else { return }
+                dragMoved = true
+                arranging.drag(item.id, delta: value.translation, screen: screen)
             }
-            .onEnded { _ in dragBase = nil }
+            .onEnded { _ in
+                if editing { arranging?.endDrag(item.id, moved: dragMoved) }
+                dragStarted = false
+                dragMoved = false
+            }
     }
 }
 
