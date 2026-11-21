@@ -10,6 +10,7 @@ on:
     branches: [feature/touch-editor-snap]
     paths: [".github/workflows/build-ipa.yml"]
 
+# A workflow-file push starts the IPA build after touch-test-only commits.
 # A push and a manual dispatch seconds apart used to start two parallel
 # multi-hour macOS jobs on the same commit.
 concurrency:
