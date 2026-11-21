@@ -2,6 +2,28 @@
   "name": "BCD Touch Editor – Test Builds",
   "identifier": "io.github.sky9662.bcd-games.touch-editor",
   "sourceURL": "https://raw.githubusercontent.com/sky9662/bcd-games/sidestore-feed/source.json",
-  "apps": [],
+  "apps": [
+    {
+      "name": "BCD Touch Editor (Test)",
+      "bundleIdentifier": "com.thebcd69.bcd",
+      "developerName": "thebcd69 / sky9662 test fork",
+      "subtitle": "Multi-select and smart alignment test build",
+      "localizedDescription": "Unofficial BCD touch-editor test build from sky9662/bcd-games.",
+      "iconURL": "https://raw.githubusercontent.com/sky9662/bcd-games/main/app/Madeira/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
+      "category": "games",
+      "beta": true,
+      "versions": [
+        {
+          "version": "0.1.686",
+          "buildVersion": "686",
+          "date": "2026-11-21",
+          "localizedDescription": "Unsigned test build from the touch-editor feature branch. SideStore/LiveContainer may sign the IPA. This is not an upstream BCD release, and should be tested before any PR is submitted.",
+          "downloadURL": "https://github.com/sky9662/bcd-games/releases/download/touch-editor-test-13/Madeira-0.1.686-unsigned.ipa",
+          "size": 228371793,
+          "minOSVersion": "18.0"
+        }
+      ]
+    }
+  ],
   "news": []
 }
