@@ -32,7 +32,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: false
+
+      # BCD 0.1.686 points madeira-dock at a SHA no longer present in the
+      # public bcd-dock repository. Keep all other submodules at their pinned
+      # revisions. Use bcd-dock's public main only for this fork's build test.
+      - name: Restore public submodules with Dock compatibility fallback
+        shell: bash
+        run: |
+          git submodule update --init --recursive -- FEX wine dxmt
+          rmdir madeira-dock 2>/dev/null || true
+          git clone --depth 1 https://github.com/thebcd69/bcd-dock.git madeira-dock
+          git -C madeira-dock rev-parse HEAD
 
       # ContentView.swift uses glassEffect(.regular, in:), which needs the
       # iOS 26 SDK. The runner defaults to Xcode 16.4 (iOS 18.5), so pick the
