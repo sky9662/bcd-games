@@ -2422,6 +2422,7 @@ jobs:
           path: build/dxc-win/out
           key: dxc-win-x64-v1-${{ hashFiles('build/dxc-win/0001-mingw-w64-build.patch', 'build/dxc-win/mingw-x86_64.cmake', 'tools/build-dxcompiler.sh') }}
 
+      # DXC host-tools retry reconciles generated DxilConstants.h (tools/build-dxcompiler.sh).
       - name: Build dxcompiler.dll and ship it as dxcompiler-optin.dll
         if: env.MINGW_OK == '1'
         continue-on-error: true
