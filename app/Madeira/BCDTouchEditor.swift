@@ -28,6 +28,7 @@ import UIKit
 struct BCDTouchEditorState: Equatable {
     var items: [BCDTouchItem] = []
     var selected: UUID?
+    var selectedIDs: Set<UUID> = []
     var layoutScale = 1.0
     var layouts = BCDTouchLayouts()
     /// The controls' opacity in play, and its range (a library game's own, or the shared one).
@@ -129,6 +130,9 @@ struct BCDTouchEditor: View {
                 .padding(.top, max(insets.top, 6) + 6)
         }
         .frame(width: screen.width, height: screen.height, alignment: .topLeading)
+        .onChange(of: state.selectedIDs) { _, ids in
+            if !ids.isEmpty { layoutsOpen = false }
+        }
         .onChange(of: state.selected) { _, id in
             tab = nil
             typing = nil
