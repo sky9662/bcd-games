@@ -192,15 +192,18 @@ extension TouchControl {
         if model.selected != id { model.selected = id }
         let ids: Set<UUID> = id.map { [$0] } ?? []
         if model.selectedIDs != ids { model.selectedIDs = ids }
+        model.alignmentX = nil; model.alignmentY = nil
     }
 
     func selectMany(_ ids: Set<UUID>) {
         let valid = ids.intersection(Set(model.controls.map(\.id)))
         model.selected = valid.count == 1 ? valid.first : nil
         model.selectedIDs = valid
+        model.alignmentX = nil; model.alignmentY = nil
     }
 
     func beginDrag(_ id: UUID) {
+        model.alignmentX = nil; model.alignmentY = nil
         if !(model.selectedIDs.count > 1 && model.selectedIDs.contains(id)) { select(id) }
         guard model.controls.first(where: { $0.id == id })?.locked != true else {
             dragOrigins = [:]
@@ -224,8 +227,14 @@ extension TouchControl {
             minDY = max(minDY, BCDTouchGeometry.placeRange.lowerBound - Double(origin.y))
             maxDY = min(maxDY, BCDTouchGeometry.placeRange.upperBound - Double(origin.y))
         }
-        let dx = min(max(Double(delta.width / screen.width), minDX), maxDX)
-        let dy = min(max(Double(delta.height / screen.height), minDY), maxDY)
+        var dx = min(max(Double(delta.width / screen.width), minDX), maxDX)
+        var dy = min(max(Double(delta.height / screen.height), minDY), maxDY)
+        let xSnap = snapTranslation(axisX: true, dx: dx, dy: dy, bounds: minDX...maxDX, screen: screen)
+        if let xSnap { dx += xSnap.offset }
+        let ySnap = snapTranslation(axisX: false, dx: dx, dy: dy, bounds: minDY...maxDY, screen: screen)
+        if let ySnap { dy += ySnap.offset }
+        model.alignmentX = xSnap?.line
+        model.alignmentY = ySnap?.line
         var updated = model.controls
         for index in updated.indices {
             guard let origin = dragOrigins[updated[index].id] else { continue }
@@ -235,8 +244,58 @@ extension TouchControl {
         if updated != model.controls { model.controls = updated }
     }
 
+    /// Align edges or centres only when two controls are near one another.
+    /// The nearest alignment within 7pt wins; no always-on grid is needed.
+    private func snapTranslation(axisX: Bool, dx: Double, dy: Double,
+                                 bounds: ClosedRange<Double>, screen: CGSize)
+        -> (offset: Double, line: CGFloat)? {
+        let length = Double(axisX ? screen.width : screen.height)
+        let otherLength = Double(axisX ? screen.height : screen.width)
+        guard length > 0, otherLength > 0 else { return nil }
+        let moving = model.controls.filter { dragOrigins[$0.id] != nil }
+        let fixed = model.controls.filter { !model.selectedIDs.contains($0.id) }
+        var bestDistance = 7.0
+        var best: (offset: Double, line: CGFloat)?
+        for m in moving {
+            guard let origin = dragOrigins[m.id] else { continue }
+            let movingItem = BCDTouchItem(stored: m)
+            let movingSize = BCDTouchGeometry.size(movingItem.shape, diameter:
+                BCDTouchGeometry.diameter(scale: m.scale, layoutScale: model.sizeScale))
+            let movingCenter = axisX ? (Double(origin.x) + dx) * length : (Double(origin.y) + dy) * length
+            let movingCrossCenter = axisX ? (Double(origin.y) + dy) * otherLength
+                                          : (Double(origin.x) + dx) * otherLength
+            let movingHalf = Double(axisX ? movingSize.width : movingSize.height) / 2
+            let movingCrossHalf = Double(axisX ? movingSize.height : movingSize.width) / 2
+            for target in fixed {
+                let fixedItem = BCDTouchItem(stored: target)
+                let fixedSize = BCDTouchGeometry.size(fixedItem.shape, diameter:
+                    BCDTouchGeometry.diameter(scale: target.scale, layoutScale: model.sizeScale))
+                let fixedCenter = (axisX ? target.nx : target.ny) * length
+                let fixedCrossCenter = (axisX ? target.ny : target.nx) * otherLength
+                let fixedHalf = Double(axisX ? fixedSize.width : fixedSize.height) / 2
+                let fixedCrossHalf = Double(axisX ? fixedSize.height : fixedSize.width) / 2
+                // Do not snap to a control located far away on the other axis.
+                let crossGap = abs(movingCrossCenter - fixedCrossCenter) - movingCrossHalf - fixedCrossHalf
+                if crossGap > 80 { continue }
+                for source in [movingCenter - movingHalf, movingCenter, movingCenter + movingHalf] {
+                    for destination in [fixedCenter - fixedHalf, fixedCenter, fixedCenter + fixedHalf] {
+                        let distance = destination - source
+                        let normalized = distance / length
+                        let translation = (axisX ? dx : dy) + normalized
+                        if abs(distance) <= bestDistance && bounds.contains(translation) {
+                            bestDistance = abs(distance)
+                            best = (normalized, CGFloat(destination))
+                        }
+                    }
+                }
+            }
+        }
+        return best
+    }
+
     func endDrag(_ id: UUID, moved: Bool) {
         dragOrigins = [:]
+        model.alignmentX = nil; model.alignmentY = nil
         if !moved { select(id) }
     }
 
@@ -422,6 +481,7 @@ struct BCDTouchControlsLive: View {
                       // A library game's Control opacity; full while editing.
                       opacity: session && !model.editing ? library.opacity : 1,
                       editing: model.editing, selected: model.selected, selectedIDs: model.selectedIDs,
+                      alignmentX: model.alignmentX, alignmentY: model.alignmentY,
                       input: BCDTouchLive.shared, arranging: BCDTouchLive.shared, look: looks.look,
                       floatingSticks: BCDTouchFeel.floatingSticks)   // madeira-bcd (Porthole port, item 9): off unless the in-game menu turned it on
             .id(feel.revision)
