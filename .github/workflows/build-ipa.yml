@@ -13,9 +13,11 @@ on:
 # A workflow-file push starts the IPA build after touch-test-only commits.
 # A push and a manual dispatch seconds apart used to start two parallel
 # multi-hour macOS jobs on the same commit.
+# Independent Turing FEX trial: never cancel a previously running good build.
+# This workflow-file update also triggers a fresh push build for this branch.
 concurrency:
   group: build-ipa-turing-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
