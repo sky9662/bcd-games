@@ -102,6 +102,8 @@ extension TouchControl {
     /// The controls as they were when the editor opened (Revert, and whether an edited built-in
     /// would be lost on switching). Taken at the same moment as the model's own baseline.
     private var baseline: [TouchControl]
+    /// Initial normalized centres for the selected controls during a single drag.
+    private var dragOrigins: [UUID: CGPoint] = [:]
     private var watch: AnyCancellable?
 
     private init() {
@@ -198,6 +200,46 @@ extension TouchControl {
         model.selectedIDs = valid
     }
 
+    func beginDrag(_ id: UUID) {
+        if !(model.selectedIDs.count > 1 && model.selectedIDs.contains(id)) { select(id) }
+        guard model.controls.first(where: { $0.id == id })?.locked != true else {
+            dragOrigins = [:]
+            return
+        }
+        dragOrigins = Dictionary(uniqueKeysWithValues: model.controls
+            .filter { model.selectedIDs.contains($0.id) && $0.locked != true }
+            .map { ($0.id, CGPoint(x: $0.nx, y: $0.ny)) })
+    }
+
+    func drag(_ id: UUID, delta: CGSize, screen: CGSize) {
+        guard model.selectedIDs.contains(id), !dragOrigins.isEmpty,
+              screen.width > 0, screen.height > 0 else { return }
+        // Clamp the common translation, not each button independently, to
+        // retain group spacing and BCD's original 3%-97% centre limits.
+        var minDX = -Double.infinity, maxDX = Double.infinity
+        var minDY = -Double.infinity, maxDY = Double.infinity
+        for origin in dragOrigins.values {
+            minDX = max(minDX, BCDTouchGeometry.placeRange.lowerBound - Double(origin.x))
+            maxDX = min(maxDX, BCDTouchGeometry.placeRange.upperBound - Double(origin.x))
+            minDY = max(minDY, BCDTouchGeometry.placeRange.lowerBound - Double(origin.y))
+            maxDY = min(maxDY, BCDTouchGeometry.placeRange.upperBound - Double(origin.y))
+        }
+        let dx = min(max(Double(delta.width / screen.width), minDX), maxDX)
+        let dy = min(max(Double(delta.height / screen.height), minDY), maxDY)
+        var updated = model.controls
+        for index in updated.indices {
+            guard let origin = dragOrigins[updated[index].id] else { continue }
+            updated[index].nx = Double(origin.x) + dx
+            updated[index].ny = Double(origin.y) + dy
+        }
+        if updated != model.controls { model.controls = updated }
+    }
+
+    func endDrag(_ id: UUID, moved: Bool) {
+        dragOrigins = [:]
+        if !moved { select(id) }
+    }
+
     func move(_ id: UUID, x: Double, y: Double) {
         update(id) { if $0.locked != true { $0.nx = x; $0.ny = y } }
     }
@@ -219,6 +261,19 @@ extension TouchControl {
 
     func setAction(_ id: UUID, _ action: BCDTouchAction) { update(id) { $0.action = action.stored } }
     func setScale(_ id: UUID, _ scale: Double) { update(id) { if $0.locked != true { $0.scale = BCDTouchGeometry.clampScale(scale) } } }
+
+    func setGroupAverageScale(_ ids: Set<UUID>, _ average: Double) {
+        let movable = model.controls.filter { ids.contains($0.id) && $0.locked != true }
+        guard !movable.isEmpty else { return }
+        let before = movable.map(\.scale).reduce(0, +) / Double(movable.count)
+        guard before > 0 else { return }
+        let multiplier = BCDTouchGeometry.clampScale(average) / before
+        var updated = model.controls
+        for index in updated.indices where ids.contains(updated[index].id) && updated[index].locked != true {
+            updated[index].scale = BCDTouchGeometry.clampScale(updated[index].scale * multiplier)
+        }
+        if updated != model.controls { model.controls = updated }
+    }
     func setLocked(_ id: UUID, _ locked: Bool) { update(id) { $0.locked = locked ? true : nil } }
 
     /// build 666 (issue #45): Tap to hold; written only when on.
