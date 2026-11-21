@@ -106,6 +106,8 @@ struct BCDTouchLayer: View {
     var editing = false
     var selected: UUID? = nil
     var selectedIDs: Set<UUID> = []
+    var alignmentX: CGFloat? = nil
+    var alignmentY: CGFloat? = nil
     let input: BCDTouchInput
     var arranging: BCDTouchArranging? = nil
     /// How the controls look (round 604, BCDTouchLook.swift); BCD's own unless the player chose another.
@@ -166,6 +168,18 @@ struct BCDTouchLayer: View {
                                     input: input, arranging: arranging, look: look)
                         .equatable()
                 }
+            }
+            if editing, let x = alignmentX {
+                Rectangle().fill(BCDTouchPalette.selected.opacity(0.7))
+                    .frame(width: 1, height: screen.height)
+                    .position(x: x, y: screen.height / 2)
+                    .allowsHitTesting(false)
+            }
+            if editing, let y = alignmentY {
+                Rectangle().fill(BCDTouchPalette.selected.opacity(0.7))
+                    .frame(width: screen.width, height: 1)
+                    .position(x: screen.width / 2, y: y)
+                    .allowsHitTesting(false)
             }
             if editing, let rect = marquee {
                 Rectangle()
