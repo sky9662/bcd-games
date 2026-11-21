@@ -172,7 +172,8 @@ extension TouchControl {
         if GamepadInput.keyboardMouseAvailable, let a = selected?.action, !a.isPad, a != .none, a != .keyboardToggle {
             links = a.stickKeys != nil ? PadBindings.stickNames : PadBindings.buttonNames
         }
-        return BCDTouchEditorState(items: items, selected: model.selected, layoutScale: model.sizeScale, layouts: layouts,
+        return BCDTouchEditorState(items: items, selected: model.selected, selectedIDs: model.selectedIDs,
+                                   layoutScale: model.sizeScale, layouts: layouts,
                                    opacity: opacity.value, opacityRange: opacity.range,
                                    playSize: inLibrarySession ? model.sizeScale : nil,
                                    padLinks: links, changed: model.controls != baseline)
@@ -185,7 +186,17 @@ extension TouchControl {
 
     // MARK: Arranging and editing
 
-    func select(_ id: UUID?) { if model.selected != id { model.selected = id } }
+    func select(_ id: UUID?) {
+        if model.selected != id { model.selected = id }
+        let ids: Set<UUID> = id.map { [$0] } ?? []
+        if model.selectedIDs != ids { model.selectedIDs = ids }
+    }
+
+    func selectMany(_ ids: Set<UUID>) {
+        let valid = ids.intersection(Set(model.controls.map(\.id)))
+        model.selected = valid.count == 1 ? valid.first : nil
+        model.selectedIDs = valid
+    }
 
     func move(_ id: UUID, x: Double, y: Double) {
         update(id) { if $0.locked != true { $0.nx = x; $0.ny = y } }
@@ -197,13 +208,13 @@ extension TouchControl {
         c.nx = p.x
         c.ny = p.y
         model.controls.append(c)
-        model.selected = c.id
+        select(c.id)
     }
 
     func remove(_ id: UUID) {
         if let i = model.index(of: id), model.controls[i].locked == true { return }   // a locked control stays until unlocked
         model.controls.removeAll { $0.id == id }
-        model.selected = nil
+        select(nil)
     }
 
     func setAction(_ id: UUID, _ action: BCDTouchAction) { update(id) { $0.action = action.stored } }
@@ -255,12 +266,12 @@ extension TouchControl {
     func setLayoutScale(_ value: Double) { model.sizeScale = min(max(value, 0.5), 2) }
 
     func revert() {
-        model.selected = nil
+        select(nil)
         if model.controls != baseline { model.controls = baseline }
     }
 
     func done() {
-        model.selected = nil
+        select(nil)
         model.editing = false
     }
 
@@ -319,7 +330,7 @@ extension TouchControl {
     }
 
     private func pauseEdit() {
-        model.selected = nil
+        select(nil)
         model.editing = false
     }
 
@@ -331,7 +342,7 @@ extension TouchControl {
     /// The layout picker over a game outside the library takes every touch while it is open,
     /// as the editor does (the overlay's window gives the whole screen to an edit).
     func beginPicking() {
-        model.selected = nil
+        select(nil)
         model.editing = true
     }
 
@@ -355,7 +366,7 @@ struct BCDTouchControlsLive: View {
         BCDTouchLayer(items: BCDTouchLive.shared.items, screen: screen, layoutScale: model.sizeScale,
                       // A library game's Control opacity; full while editing.
                       opacity: session && !model.editing ? library.opacity : 1,
-                      editing: model.editing, selected: model.selected,
+                      editing: model.editing, selected: model.selected, selectedIDs: model.selectedIDs,
                       input: BCDTouchLive.shared, arranging: BCDTouchLive.shared, look: looks.look,
                       floatingSticks: BCDTouchFeel.floatingSticks)   // madeira-bcd (Porthole port, item 9): off unless the in-game menu turned it on
             .id(feel.revision)
