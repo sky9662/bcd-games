@@ -261,21 +261,39 @@ jobs:
       # session that closed unexpectedly (BCDSessionRecorderLive.swift), and the readers of the line: tools/log-facts.py and
       # the scanner behind the replay.
       - name: Check the session summary and the question after an unexpected close
-        run: python3 tests/host/check-bcd-session-record.py --require-swift
+        shell: bash
+        run: |
+          if [ -f tools/log-facts.py ]; then
+            python3 tests/host/check-bcd-session-record.py --require-swift
+          else
+            echo "::warning::public mirror is missing owner-only backend tools; skipping backend-dependent host test (check-bcd-session-record.py)"
+          fi
 
       # Screenshots from the in-game menu and Send Log (BCDScreenshotLive.swift, LogUpload.swift, the intake's POST /v1/shots,
       # tools/pull-logs.py): the game's own surface only, a memory guard, Photos add-only, the picture sent as it is and only when
       # chosen, as a small copy of 100 KB or less made apart from the kept one (BCDScreenshotShrink.swift, run on generated pictures),
       # the intake's 160 KB limit, and the pull tool saving it beside its log.
       - name: Check screenshots with Send Log
-        run: python3 tests/host/check-bcd-screenshot.py --require-swift
+        shell: bash
+        run: |
+          if [ -f bcd-logs/worker/worker.js ] && [ -f tools/pull-logs.py ]; then
+            python3 tests/host/check-bcd-screenshot.py --require-swift
+          else
+            echo "::warning::public mirror is missing owner-only backend tools; skipping backend-dependent host test (check-bcd-screenshot.py)"
+          fi
 
       # madeira-bcd FORK-ONLY: Settings › Feedback (FeedbackUpload*.swift, BCDSettingsFeedback.swift,
       # the intake's POST /v1/feedback, tools/pull-logs.py --feedback): the intake's gate, endpoint
       # and fields, nothing personal in the body, the person's words untouched, the limits, the
       # section's place after Logs, and the pull tool never printing the key.
       - name: Check Settings › Feedback
-        run: python3 tests/host/check-feedback.py --require-swift
+        shell: bash
+        run: |
+          if [ -f bcd-logs/worker/worker.js ] && [ -f tools/pull-logs.py ]; then
+            python3 tests/host/check-feedback.py --require-swift
+          else
+            echo "::warning::public mirror is missing owner-only backend tools; skipping backend-dependent host test (check-feedback.py)"
+          fi
 
       # A newer BCD, said at most once a day (BCDUpdateCheck.swift, BCDUpdateNotice.swift): the source's shape
       # as tools/update-altsource.py writes it, the build compare, the day key, one host with a size cap, the
