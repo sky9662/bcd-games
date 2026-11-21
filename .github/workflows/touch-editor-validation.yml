@@ -1,0 +1,41 @@
+name: Touch editor validation (Xcode 27)
+on:
+  push:
+    branches:
+      - feature/touch-editor-snap
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: xcode-27
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphonesimulator --show-sdk-version
+      - name: Host touch-editor regressions
+        run: python3 tests/host/check-bcd-touch.py
+      - name: Compile the original BCD touch editor in the preview app
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import importlib.util
+          from pathlib import Path
+          spec = importlib.util.spec_from_file_location("bcd_preview", "tools/ui-preview.py")
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          module.fetch_art = lambda: None
+          module._build(Path("/tmp/bcd-touch-editor-compiled"))
+          PY
+      - name: Upload compiled simulator preview
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bcd-touch-editor-simulator-preview
+          path: /tmp/bcd-touch-editor-compiled/BCDPreview.app
+          if-no-files-found: error
