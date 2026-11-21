@@ -1,3 +1,34 @@
+# Portions copyright 2026 Connor Gow: code taken from https://github.com/willfaust/Madeira (pull request #462)
+# under GPL-3.0-or-later and modified for BCD in November 2026. See THIRD-PARTY-NOTICES.md.
+# Portions copyright 2026 Russell Barton: code taken from https://github.com/thebcd69/bcd-games (pull request #46 by rbarton124)
+# under GPL-3.0-or-later with the Madeira Converter Exception and modified for BCD in November 2026. See THIRD-PARTY-NOTICES.md.
+name: Build Madeira IPA (unsigned)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/touch-editor-snap]
+    paths: [".github/workflows/build-ipa.yml"]
+
+# A push and a manual dispatch seconds apart used to start two parallel
+# multi-hour macOS jobs on the same commit.
+concurrency:
+  group: build-ipa
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # madeira-bcd: runs only in the owner's repository; a fork's run is skipped.
+    if: github.repository == 'sky9662/bcd-games'
+    runs-on: xcode-27
+    # contents: write only so the token can see DRAFT releases, which is where
+    # the Metal Shader Converter installer is kept (drafts are not public).
+    # Nothing in this job creates, edits or pushes anything.
+    permissions:
+      contents: write
+      actions: read
+    timeout-minutes: 360
+    steps:
       - uses: actions/checkout@v4
         with:
           submodules: false
