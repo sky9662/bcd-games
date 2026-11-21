@@ -6,7 +6,7 @@ on:
 
 permissions:
   contents: write
-  actions: read
+  actions: write
 
 jobs:
   publish:
@@ -58,3 +58,9 @@ jobs:
             --prerelease \
             --title "BCD Touch Editor test build ${{ github.event.workflow_run.run_number }}" \
             --notes "Unsigned test build from the touch-editor feature branch. SideStore/LiveContainer may sign the IPA. This is not an upstream BCD release, and should be tested before any PR is submitted."
+      # GITHUB_TOKEN-created releases do not trigger release workflows.
+      # Explicit workflow_dispatch is exempt from that GitHub restriction.
+      - name: Refresh the SideStore JSON source
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run update-touch-editor-source.yml --ref main --repo "$GITHUB_REPOSITORY"
