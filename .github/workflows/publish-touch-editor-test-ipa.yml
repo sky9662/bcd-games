@@ -1,0 +1,60 @@
+name: Publish BCD touch editor test IPA
+on:
+  workflow_run:
+    workflows: ["Build Madeira IPA (unsigned)"]
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    if: >-
+      github.repository == 'sky9662/bcd-games' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'feature/touch-editor-snap' &&
+      github.event.workflow_run.head_repository.full_name == 'sky9662/bcd-games'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download successfully built test IPA
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: bcd-touch-editor-unsigned-ipa
+          path: dist
+      - name: Check app bundle metadata
+        run: |
+          python3 - <<'PY'
+          from glob import glob
+          from pathlib import Path
+          from zipfile import ZipFile
+          import plistlib, re
+          ipa = glob("dist/Madeira-*-unsigned.ipa")
+          if len(ipa) != 1:
+              raise SystemExit(f"Expected one primary test IPA, got {ipa}")
+          if Path(ipa[0]).stat().st_size < 1000000:
+              raise SystemExit("IPA unexpectedly small")
+          with ZipFile(ipa[0]) as zip:
+              names = [x for x in zip.namelist()
+                       if re.fullmatch(r"Payload/[^/]+\.app/Info\.plist", x)]
+              if len(names) != 1: raise SystemExit("Invalid IPA app payload")
+              info = plistlib.loads(zip.read(names[0]))
+          for k in ("CFBundleIdentifier", "CFBundleVersion", "CFBundleShortVersionString"):
+              if not info.get(k): raise SystemExit(f"Missing {k}")
+          print("Verified IPA:", ipa[0], info["CFBundleIdentifier"],
+                info["CFBundleShortVersionString"], info["CFBundleVersion"])
+          PY
+      - name: Publish GitHub pre-release for SideStore
+        env:
+          GH_${{ secrets.GITHUB_TOKEN }}: ${{ secrets.GITHUB_TOKEN }}
+          TAG: touch-editor-test-${{ github.event.workflow_run.run_number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          gh release create "$TAG" dist/Madeira-*-unsigned.ipa \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$HEAD_SHA" \
+            --prerelease \
+            --title "BCD Touch Editor test build ${{ github.event.workflow_run.run_number }}" \
+            --notes "Unsigned test build from the touch-editor feature branch. SideStore/LiveContainer may sign the IPA. This is not an upstream BCD release, and should be tested before any PR is submitted."
