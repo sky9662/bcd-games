@@ -2917,13 +2917,16 @@ final class TouchControlsModel: ObservableObject {
     @Published var editing = false {            // transient, never persisted
         didSet {
             // ml1970: an ended edit is written back to the custom layout it came from.
-            if !oldValue && editing { editBaseline = controls }
+            if !oldValue && editing { editBaseline = controls; selectedIDs = [] }
+            if oldValue && !editing { selectedIDs = [] }
             if oldValue && !editing { ControlPresetsModel.shared.editingEnded(baseline: editBaseline) }
         }
     }
     /// The Session panel card is open on this window: it takes every touch.
     @Published var sessionPanel = false         // transient
     @Published var selected: UUID?              // transient
+    /// Editor-only marquee selection; never persisted in control profiles.
+    @Published var selectedIDs: Set<UUID> = []   // transient
     /// ml1970: the named layout (TouchControlPresets.swift) these controls were
     /// loaded from; nil for controls no layout holds.
     @Published var layoutID: String?            { didSet { save() } }
