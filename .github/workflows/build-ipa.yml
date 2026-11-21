@@ -235,7 +235,15 @@ jobs:
       # player taps Send, the trace and the detailed log asked for by the session only), game feedback through the existing Feedback intake, and the
       # launch check (a note on the game's page, from the import tables of its program files), with tools/pull-logs.py reading the feedback.
       - name: Check help with a game
-        run: python3 tests/host/check-bcd-help.py --require-swift
+        shell: bash
+        run: |
+          # The public mirror omits the BCD log intake worker.
+          # This is a host-only test of the owner's backend, not part of the IPA.
+          if [ -f bcd-logs/worker/worker.js ]; then
+            python3 tests/host/check-bcd-help.py --require-swift
+          else
+            echo "::warning::public mirror lacks bcd-logs/worker; skipping backend-dependent host test"
+          fi
 
       # Shareable control layouts (round 604; BCDControlShare*.swift): a custom layout as a small JSON file, a file added as a new layout after the
       # envelope and every control are checked (size, ranges, nesting, fresh ids, a name that replaces nothing).
