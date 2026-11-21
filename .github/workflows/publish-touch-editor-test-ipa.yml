@@ -48,7 +48,7 @@ jobs:
           PY
       - name: Publish GitHub pre-release for SideStore
         env:
-          GH_${{ secrets.GITHUB_TOKEN }}: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: touch-editor-test-${{ github.event.workflow_run.run_number }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
