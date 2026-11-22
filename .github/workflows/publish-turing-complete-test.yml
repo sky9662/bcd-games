@@ -1,0 +1,62 @@
+name: Publish BCD 2 Turing Complete test
+
+on:
+  push:
+    branches: [release/turing-complete-sidestore]
+    paths: [.github/workflows/publish-turing-complete-test.yml]
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    if: github.repository == 'sky9662/bcd-games'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: sky9662/bcd-games
+    steps:
+      - name: Publish verified IPA and SideStore source
+        shell: bash
+        run: |
+          gh api /repos/sky9662/bcd-games/actions/artifacts/14725936769/zip > actions.zip
+          echo '33311dc91065abeb2c0ed8cea7d46f1c5bb4fc934c6cd15efa716863566ed08d  actions.zip' | sha256sum --check
+          unzip -p actions.zip Madeira2-0.1.686-unsigned.ipa > BCD2-Turing-Complete-0.1.686-unsigned.ipa
+          echo '46c4d611fa2d6b4b0633361fc25601fd101474f9ab3b3e737a4286bd9825a103  BCD2-Turing-Complete-0.1.686-unsigned.ipa' | sha256sum --check
+          cat > source.json <<'JSON'
+          {
+            "name": "BCD 2 Turing Complete Test",
+            "identifier": "io.github.sky9662.bcd-games.turing-complete-test",
+            "sourceURL": "https://github.com/sky9662/bcd-games/releases/download/turing-complete-fex-test-16/source.json",
+            "iconURL": "https://raw.githubusercontent.com/thebcd69/bcd-games/v0.1.686/app/Madeira/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
+            "apps": [
+              {
+                "name": "BCD 2 · Turing Complete Test",
+                "bundleIdentifier": "com.thebcd69.bcd2",
+                "developerName": "thebcd69 / sky9662",
+                "localizedDescription": "BCD 2 test build from sky9662/bcd-games for Turing Complete. Enable env.MADEIRA_FEX_EXEC_RECHECK = 1 in the per-game options to test the experimental FEX change.",
+                "iconURL": "https://raw.githubusercontent.com/thebcd69/bcd-games/v0.1.686/app/Madeira/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
+                "versions": [
+                  {
+                    "version": "0.1.686",
+                    "buildVersion": "686",
+                    "date": "2026-11-21T21:28:19Z",
+                    "localizedDescription": "Turing Complete FEX diagnostic build. GitHub Actions run 44940639764. The patch is off by default.",
+                    "downloadURL": "https://github.com/sky9662/bcd-games/releases/download/turing-complete-fex-test-16/BCD2-Turing-Complete-0.1.686-unsigned.ipa",
+                    "size": 228375363,
+                    "minOSVersion": "18.0"
+                  }
+                ]
+              }
+            ],
+            "news": []
+          }
+          JSON
+          python3 -m json.tool source.json > /dev/null
+          gh release create turing-complete-fex-test-16 BCD2-Turing-Complete-0.1.686-unsigned.ipa source.json \
+            --target 45189a8321e78d34be298940ddc29c7f0c23e084 \
+            --prerelease --latest=false \
+            --title 'BCD 2 0.1.686 · Turing Complete FEX test' \
+            --notes 'Unsigned BCD 2 for the opt-in Turing Complete FEX test. Built in GitHub Actions run 44940639764. Use SideStore to sign and install the IPA.'
