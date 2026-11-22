@@ -12,7 +12,10 @@ enum BCDTouchAcceleration {
         guard enabled, dx.isFinite, dy.isFinite, elapsed.isFinite, elapsed > 0 else { return 1 }
         let speed = hypot(dx, dy) / elapsed
         guard speed.isFinite else { return 1 }
-        // Touch timestamps are binary floating-point values (e.g. 1.01 - 1),\n        // so a nominal 1200 pt/s sample can land infinitesimally below the cap.\n        // Snap only within a negligible floating-point tolerance.\n        let fraction = speed >= 1200 - 1e-8 ? 1 : min(1, max(0, (speed - 200) / 1000))
+        // Touch timestamps are binary floating-point values (e.g. 1.01 - 1),
+        // so a nominal 1200 pt/s sample can land infinitesimally below the cap.
+        // Snap only within a negligible floating-point tolerance.
+        let fraction = speed >= 1200 - 1e-8 ? 1 : min(1, max(0, (speed - 200) / 1000))
         return 1 + 1.5 * fraction
     }
 }
