@@ -2,7 +2,8 @@
 # under GPL-3.0-or-later and modified for BCD in November 2026. See THIRD-PARTY-NOTICES.md.
 # Portions copyright 2026 Russell Barton: code taken from https://github.com/thebcd69/bcd-games (pull request #46 by rbarton124)
 # under GPL-3.0-or-later with the Madeira Converter Exception and modified for BCD in November 2026. See THIRD-PARTY-NOTICES.md.
-name: Build BCD Touch Acceleration IPA (unsigned)\n# Rebuild after fixing floating-point touch timestamp saturation (7c2854fd).
+name: Build BCD Touch Acceleration IPA (unsigned)
+# Rebuild after repairing Swift source newlines (9ba0e3ae).
 
 on:
   workflow_dispatch:
