@@ -646,20 +646,31 @@ final class SteamOwnedLibrary: ObservableObject {
     /// and where its folders are in the prefix.
     private func cloudContext(_ appID: Int) async throws -> (info: SteamAppInfo, paths: SteamCloudPaths)? {
         guard appID > 0, appID <= Int(UInt32.max),
-              let game = SteamGamesModel.shared.games.first(where: { $0.id == appID }),
-              let user = SteamCloudPaths.userFolder(drive: Self.drive) else { return nil }
+              let game = SteamGamesModel.shared.games.first(where: { $0.id == appID }) else { return nil }
         try await session.ensureConnected()
         let steamID = session.steamID
         guard let info = try await fetcher.fetchAppInfo(appID: UInt32(appID)) else { return nil }
         let drive = Self.drive
+        guard let user = Self.cloudWindowsUser(drive: drive) ?? SteamCloudPaths.userFolder(drive: drive)?.url else { return nil }
         let external = try ExternalDrives.externalRoot(for: game.library)
         let install = try ExternalDrives.nativeURL(game.library + "/common/" + game.installDir)
         let paths = SteamCloudPaths(
-            drive: drive, userFolder: user.url,
+            drive: drive, userFolder: user,
             installFolder: install,
             remoteFolder: MadeiraDock.clientRoot.appendingPathComponent("userdata/\(steamID & 0xFFFF_FFFF)/\(appID)/remote", isDirectory: true),
             steamID: steamID, overrides: info.rootOverrides, externalLibraryRoot: external?.root, externalLibraryID: external?.identity)
         return (info, paths)
+    }
+
+    private static func cloudWindowsUser(drive: URL) -> URL? {
+        let registry = drive.deletingLastPathComponent().appendingPathComponent("user.reg")
+        guard let data = try? Data(contentsOf: registry), data.count <= 16 << 20,
+              let text = String(data: data, encoding: .utf8) else { return nil }
+        let reg = DockReset.RegText(text)
+        guard let range = reg.sectionRange(of: "Volatile Environment"),
+              let profile = reg.string("USERPROFILE", in: range),
+              let appData = reg.string("APPDATA", in: range) else { return nil }
+        return SteamCloudPaths.windowsUserFolder(drive: drive, profile: profile, appData: appData)
     }
 
     private func cloudListing(_ appID: Int) async throws -> SteamCloudListing {
@@ -786,6 +797,9 @@ final class SteamOwnedLibrary: ObservableObject {
         var settled: [String: String] = [:]
         do {
             guard let context = try await cloudContext(appID) else { throw SteamFileError.invalid("BCD couldn't find this game's save folders.") }
+            guard wanted.allSatisfy({ $0.profileScope == context.paths.profileScope(cloudPath: $0.path) }) else {
+                throw SteamFileError.invalid("The Windows save profile changed. Check Steam Cloud again.")
+            }
             for entry in wanted {
                 guard !inSession, Self.cloudEnabled else { throw CancellationError() }
                 guard let place = context.paths.location(cloudPath: entry.path) else { continue }
@@ -847,6 +861,9 @@ final class SteamOwnedLibrary: ObservableObject {
         }
         do {
             guard let context = try await cloudContext(appID) else { throw SteamFileError.invalid("BCD couldn't find this game's save folders.") }
+            guard wanted.allSatisfy({ $0.profileScope == context.paths.profileScope(cloudPath: $0.path) }) else {
+                throw SteamFileError.invalid("The Windows save profile changed. Check Steam Cloud again.")
+            }
             // Steam keeps no copy of a cloud file an upload replaces: keep one here
             // first. If one cannot be fetched (or the cloud changed since the check),
             // nothing is uploaded.
