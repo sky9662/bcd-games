@@ -7,7 +7,7 @@ name: Build BCD Turing Complete IPA (unsigned)
 on:
   workflow_dispatch:
   push:
-    branches: [feature/turing-complete-fex-ipa]
+    branches: [feature/turing-complete-fex-ipa, feature/turing-success-touch-acceleration-ipa]
 
 # A workflow-file push starts the IPA build after touch-test-only commits.
 # A push and a manual dispatch seconds apart used to start two parallel
