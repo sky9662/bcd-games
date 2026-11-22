@@ -2,19 +2,20 @@
 # under GPL-3.0-or-later and modified for BCD in November 2026. See THIRD-PARTY-NOTICES.md.
 # Portions copyright 2026 Russell Barton: code taken from https://github.com/thebcd69/bcd-games (pull request #46 by rbarton124)
 # under GPL-3.0-or-later with the Madeira Converter Exception and modified for BCD in November 2026. See THIRD-PARTY-NOTICES.md.
-name: Build BCD Touch Acceleration IPA (unsigned)\n# Rebuild after fixing floating-point touch timestamp saturation (7c2854fd).
+name: Build BCD Integrated Touch Turing Cloud IPA (unsigned)
 
 on:
   workflow_dispatch:
   push:
-    branches: [feature/touch-mouse-acceleration]
-    paths: [".github/workflows/build-ipa.yml"]
+    branches: [feature/integrated-touch-turing-cloud-ipa]
 
 # A workflow-file push starts the IPA build after touch-test-only commits.
 # A push and a manual dispatch seconds apart used to start two parallel
 # multi-hour macOS jobs on the same commit.
+# Independent Turing FEX trial: never cancel a previously running good build.
+# This workflow-file update also triggers a fresh push build for this branch.
 concurrency:
-  group: bcd-touch-acc-${{ github.ref }}
+  group: build-ipa-integrated-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -58,6 +59,9 @@ jobs:
             sudo xcode-select -s "$NEWEST/Contents/Developer"
             echo "::notice::selected $NEWEST"
           fi
+
+      - name: Verify Steam Cloud profile selection and conflicts
+        run: python3 tests/host/check-steam-cloud.py
 
       # madeira-bcd FORK-ONLY: one build-number sequence across GitHub Actions
       # and the owner's Mac (owner's decision 2026-10-13). This build's number is
@@ -1267,10 +1271,31 @@ jobs:
           path: FEX/build-arm64ec
           key: fex-arm64ec-${{ steps.fexrev.outputs.sha }}-v2
 
-      - name: Build xtajit64.dll (FEX fixes, AVX opt-in)
-        if: env.MINGW_OK == '1'
-        continue-on-error: true
+      # This is a Turing FEX diagnostic build: a fallback to the committed
+      # unpatched DLL must never be reported as a successful test IPA.
+      - name: Require ARM64EC toolchain for Turing FEX
+        run: |
+          if [ "${MINGW_OK:-}" != "1" ]; then
+            echo "::error::ARM64EC toolchain unavailable; refusing to ship an unpatched IPA"
+            exit 1
+          fi
+
+      - name: Build xtajit64.dll (Turing mapped-exec recheck)
         run: bash tools/build-xtajit64.sh
+
+      - name: Verify Turing FEX patch is present in shipped DLL
+        run: |
+          for dll in app/Madeira/arm64ec-windows/xtajit64.dll app/Madeira/arm64ec-windows/xtajit64-avx.dll; do
+            if [ ! -s "$dll" ]; then
+              echo "::error::Missing built FEX module: $dll"
+              exit 1
+            fi
+            if ! LC_ALL=C grep -aFq '[tc-exec-recheck]' "$dll"; then
+              echo "::error::Unpatched FEX module: $dll (diagnostic marker absent)"
+              exit 1
+            fi
+            echo "::notice::verified Turing FEX marker in $dll"
+          done
 
       - name: Save FEX ARM64EC build
         if: steps.fexeccache.outputs.cache-hit != 'true' && hashFiles('FEX/build-arm64ec/Bin/libarm64ecfex.dll') != ''
@@ -2993,31 +3018,42 @@ jobs:
       - name: Package Madeira and Madeira2 unsigned IPAs
         run: python3 tools/ota-variants.py package build-out/Madeira.xcarchive/Products/Applications/Madeira.app build-out ${{ steps.bn.outputs.n }}
 
+      - name: Verify the test IPA keeps the original BCD app ID
+        shell: bash
+        run: |
+          shopt -s nullglob
+          ipas=(build-out/Madeira-*-unsigned.ipa)
+          test "${#ipas[@]}" -eq 1
+          plist=$(mktemp)
+          trap 'rm -f "$plist"' EXIT
+          unzip -p "${ipas[0]}" 'Payload/Madeira.app/Info.plist' > "$plist"
+          test "$(plutil -extract CFBundleIdentifier raw "$plist")" = com.thebcd69.bcd
+
       # This unsigned IPA is for the user's private sideload testing.
       # Do not access the upstream author's OTA certificate or bucket.
       - name: Upload unsigned BCD test IPAs
         uses: actions/upload-artifact@v4
         with:
-          name: bcd-touch-acc-unsigned-ipa
+          name: bcd-integrated-touch-turing-cloud-unsigned-ipa
           path: |
             build-out/Madeira-*-unsigned.ipa
             build-out/Madeira2-*-unsigned.ipa
           if-no-files-found: error
           retention-days: 7
 
-      - name: Provide fixed-name touch acceleration IPA
+      - name: Copy fixed-name integrated IPA
         shell: bash
         run: |
           shopt -s nullglob
           ipas=(build-out/Madeira-*-unsigned.ipa)
           test "${#ipas[@]}" -eq 1
-          cp "${ipas[0]}" build-out/bcd-touch-acc-unsigned.ipa
+          cp "${ipas[0]}" build-out/bcd-integrated-unsigned.ipa
 
-      - name: Upload fixed-name touch acceleration IPA
+      - name: Upload fixed-name integrated IPA
         uses: actions/upload-artifact@v4
         with:
-          name: bcd-touch-acc-ipa
-          path: build-out/bcd-touch-acc-unsigned.ipa
+          name: bcd-integrated-unsigned-ipa
+          path: build-out/bcd-integrated-unsigned.ipa
           if-no-files-found: error
           retention-days: 14
 
