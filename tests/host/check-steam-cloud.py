@@ -196,6 +196,34 @@ try! bytes.write(to: saves.appendingPathComponent("data_0.sav"))
 let paths = SteamCloudPaths(drive: drive, userFolder: drive.appendingPathComponent("users/player", isDirectory: true),
                             installFolder: install, remoteFolder: tmp.appendingPathComponent("remote", isDirectory: true),
                             steamID: steamID, overrides: [])
+
+let gameSavePath = "%WinAppDataRoaming%Example/levels.txt"
+let recorded = SteamCloudPaths.windowsUserFolder(drive: drive, profile: "C:\\users\\PLAYER",
+                                                  appData: "C:\\users\\player\\AppData\\Roaming")
+check(recorded?.lastPathComponent == "player", "Wine's recorded profile resolves with Windows casing")
+check(SteamCloudPaths.windowsUserFolder(drive: drive, profile: "C:\\users\\player",
+                                      appData: "C:\\users\\other\\AppData\\Roaming") == nil,
+      "a profile that disagrees with Windows AppData is not used")
+check(SteamCloudPaths.windowsUserFolder(drive: drive, profile: "C:\\users\\..",
+                                      appData: "C:\\users\\..\\AppData\\Roaming") == nil,
+      "a profile cannot leave the Windows users directory")
+var otherPaths = paths
+otherPaths.userFolder = drive.appendingPathComponent("users/other")
+var changedProfile = SteamCloudEntry(path: gameSavePath, kind: .differ,
+                                     cloudSHA: Data([1]), localSHA: Data([2]))
+changedProfile.profileScope = paths.profileScope(cloudPath: gameSavePath)
+var oldProfile = changedProfile
+oldProfile.profileScope = otherPaths.profileScope(cloudPath: gameSavePath)
+let cloudHash = SteamCloudPlan.hex(changedProfile.cloudSHA)
+let profilePlan = SteamCloudPlan.make(audit: SteamCloudAudit(entries: [changedProfile]),
+                                      baseline: [oldProfile.key: cloudHash, gameSavePath.lowercased(): cloudHash])
+check(profilePlan.upload.isEmpty && profilePlan.conflicts.count == 1,
+      "another profile or a legacy baseline cannot trigger an upload")
+let afterSync = SteamCloudPlan.make(audit: SteamCloudAudit(entries: [changedProfile]),
+                                     baseline: [changedProfile.key: cloudHash])
+check(afterSync.upload.count == 1, "changes sync normally after this specific profile has a baseline")
+check(paths.profileScope(cloudPath: "%GameInstall%saves/slot") == nil &&
+      paths.profileScope(cloudPath: "saves/slot") == nil, "folder-independent saves keep their existing baseline")
 let ufs = [SteamAppInfo.SaveFile(root: "gameinstall", path: "savedata/{64BitSteamID}", pattern: "*", recursive: false, platforms: [])]
 let name = "%GameInstall%savedata/\(steamID)/data_0.sav"
 let local = try! SteamCloudAudit.run(listing: SteamCloudListing(), saveFiles: ufs, paths: paths)

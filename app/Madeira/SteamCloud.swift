@@ -130,6 +130,29 @@ struct SteamCloudPaths: Sendable {
         return (users.appendingPathComponent(newest, isDirectory: true), own.count, "newest")
     }
 
+    /// Accept Wine's recorded Windows profile only when its effective AppData
+    /// agrees and the profile is an existing directory inside this prefix.
+    static func windowsUserFolder(drive: URL, profile: String, appData: String) -> URL? {
+        let parts = profile.split(separator: "\\", omittingEmptySubsequences: false)
+        guard parts.count == 3, parts[0].lowercased() == "c:",
+              parts[1].lowercased() == "users" else { return nil }
+        let name = String(parts[2])
+        guard !name.isEmpty, !name.hasPrefix("."), name.lowercased() != "public",
+              !name.contains("/"), !name.contains(":"), !name.contains("\0"),
+              appData.caseInsensitiveCompare(profile + "\\AppData\\Roaming") == .orderedSame else { return nil }
+        let users = drive.appendingPathComponent("users", isDirectory: true)
+        guard let names = try? FileManager.default.contentsOfDirectory(atPath: users.path) else { return nil }
+        let matches = names.filter { $0.caseInsensitiveCompare(name) == .orderedSame }
+        guard matches.count == 1, let match = matches.first else { return nil }
+        let folder = users.appendingPathComponent(match, isDirectory: true)
+        let realDrive = drive.resolvingSymlinksInPath().path
+        guard folder.resolvingSymlinksInPath().path == realDrive + "/users/" + match else { return nil }
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: folder.path, isDirectory: &isDirectory),
+              isDirectory.boolValue else { return nil }
+        return folder
+    }
+
     /// The local folder a Steam root name stands for on Windows, or nil for a
     /// root this prefix has no folder for (another platform's).
     func folder(root: String) -> URL? {
@@ -172,7 +195,7 @@ struct SteamCloudPaths: Sendable {
 
     /// The base folder and relative components a cloud path maps to, with the
     /// Windows root override applied. nil: no folder here, or an unsafe path.
-    func location(cloudPath: String) -> (base: URL, parts: [String])? {
+    private func windowsCloudPath(_ cloudPath: String) -> (root: String?, rest: String) {
         var (root, rest) = Self.split(cloudPath)
         if let name = root,
            let override = overrides.first(where: { $0.root.caseInsensitiveCompare(name) == .orderedSame
@@ -180,6 +203,19 @@ struct SteamCloudPaths: Sendable {
             if !override.useInstead.isEmpty { root = override.useInstead }
             if !override.addPath.isEmpty { rest = override.addPath + "/" + rest }
         }
+        return (root, rest)
+    }
+
+    /// Profile saves in two Windows users must never share a sync baseline.
+    /// Steam API saves and GameInstall retain their existing unscoped keys.
+    func profileScope(cloudPath: String) -> String? {
+        guard let root = windowsCloudPath(cloudPath).root, root.lowercased() != "gameinstall",
+              folder(root: root) != nil else { return nil }
+        return userFolder.lastPathComponent
+    }
+
+    func location(cloudPath: String) -> (base: URL, parts: [String])? {
+        let (root, rest) = windowsCloudPath(cloudPath)
         guard let parts = components(rest) else { return nil }
         if let root {
             guard let base = folder(root: root) else { return nil }
@@ -239,7 +275,12 @@ struct SteamCloudEntry: Identifiable, Equatable, Sendable {
 
     var id: String { path }
     /// Baseline key: one spelling per file.
-    var key: String { path.lowercased() }
+    var profileScope: String? = nil
+    var key: String {
+        // A NUL cannot occur in a Windows save path or profile name.
+        if let profileScope { return "\0" + profileScope + "\0" + path.lowercased() }
+        return path.lowercased()
+    }
     /// The file name without its folders, for display.
     var name: String { path.split(separator: "/").last.map(String.init) ?? path }
 }
@@ -336,6 +377,9 @@ struct SteamCloudAudit: Equatable, Sendable {
                                                      localSize: local.size, localTime: local.time,
                                                      localSHA: sha1(of: url) ?? Data()))
             }
+        }
+        for index in audit.entries.indices {
+            audit.entries[index].profileScope = paths.profileScope(cloudPath: audit.entries[index].path)
         }
         return audit
     }
