@@ -114,7 +114,7 @@ if ci.exists():
 
 # ---- behaviour and build ------------------------------------------------------------------------------------------
 base = ["BCDKeyNames.swift", "BCDExtraKeys.swift", "BCDTurbo.swift", "BCDInputPrefs.swift"]
-k.harness("aim mode", ["BCDAimZone.swift"], "bcd_aim_checks.swift")
+k.harness("aim mode", ["BCDTouchAcceleration.swift", "BCDAimZone.swift"], "bcd_aim_checks.swift")
 k.harness("the touch gestures", base + ["BCDInputActions.swift", "BCDGestureMap.swift"], "bcd_gestures_checks.swift")
 k.harness("the Apple Pencil", ["BCDPencil.swift"], "bcd_pencil_checks.swift")
 k.preview("with the plain files")
