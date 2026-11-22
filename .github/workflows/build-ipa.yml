@@ -60,6 +60,9 @@ jobs:
             echo "::notice::selected $NEWEST"
           fi
 
+      - name: Verify Steam Cloud profile selection and conflicts
+        run: python3 tests/host/check-steam-cloud.py
+
       # madeira-bcd FORK-ONLY: one build-number sequence across GitHub Actions
       # and the owner's Mac (owner's decision 2026-10-13). This build's number is
       # in docs/local-build/BUILD-NUMBER: the Mac's run.sh, or a cloud session
