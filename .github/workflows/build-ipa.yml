@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
   push:
     branches: [feature/touch-mouse-acceleration]
-    paths: ['.github/workflows/build-ipa.yml']
+    paths: ['.github/workflows/build-ipa.yml', 'madeira-dock']
   # Paused while builds run on the owner's Mac (2026-10-13). To build on push
   # to main again, uncomment the three lines below.
   # push:
