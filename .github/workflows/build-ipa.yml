@@ -17,7 +17,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The guest-instruction harness requires 4 KiB pages. macOS ARM runners use
+  # 16 KiB pages, so run its full ASan/UBSan positive + negative controls on
+  # a Linux x86_64 runner with 4 KiB pages instead of silently waiving it.
+  guest-instruction-linux:
+    if: github.repository == 'sky9662/bcd-games'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      - name: Verify 4 KiB host pages and run guest-instruction regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          pagesize=$(getconf PAGE_SIZE)
+          echo "::notice::Linux host page size: $pagesize"
+          if [ "$pagesize" != "4096" ]; then
+            echo "::error::guest-instruction test requires a 4 KiB page host"
+            exit 1
+          fi
+          python3 tests/host/check-guest-instruction.py
+
   build:
+    needs: [guest-instruction-linux]
     # madeira-bcd: runs only in the owner's repository; a fork's run is skipped.
     if: github.repository == 'sky9662/bcd-games'
     runs-on: xcode-27
@@ -991,7 +1015,10 @@ jobs:
 
       # x64 classification, IAT slots and fault-safe guest-instruction diagnostics (ASan/UBSan, three negative controls).
       - name: Check guest instruction
-        run: python3 tests/host/check-guest-instruction.py || python3 tools/ci-optional-fixture-check.py tests/host/check-guest-instruction.py
+        # Already tested with all ASan/UBSan negative controls in the required
+        # 4 KiB Linux job. Do not launch this 4 KiB-only harness on macOS/ARM64.
+        run: |
+          echo "::notice::Guest instruction regression completed in required 4 KiB Linux job"
 
       # D3D9 device lock and FEX split CAS: no split-lock rollback, strict split locks on for WOW64, 4x20000 XADD exact.
       - name: Check d3d9 splitlock
