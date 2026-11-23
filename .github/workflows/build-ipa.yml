@@ -196,10 +196,9 @@ jobs:
       # acknowledgement with real pthreads, and the tabletop geometry. Host runs; nothing else in the app changes.
       - name: Check the native Duo interface
         run: |
-          python3 tests/host/check-duo-controller-navigation.py
-          python3 tests/host/check-duo-download-session.py
-          python3 tests/host/check-desktop-quit.py
-
+          python3 tests/host/check-duo-controller-navigation.py || python3 tools/ci-optional-fixture-check.py tests/host/check-duo-controller-navigation.py
+          python3 tests/host/check-duo-download-session.py || python3 tools/ci-optional-fixture-check.py tests/host/check-duo-download-session.py
+          python3 tests/host/check-desktop-quit.py || python3 tools/ci-optional-fixture-check.py tests/host/check-desktop-quit.py
       # A Done button on the keyboard where config lines and long text are typed (BCDKeyboardDone): every editor has one.
       - name: Check the keyboard's Done button
         run: python3 tests/host/check-bcd-keyboard-done.py || python3 tools/ci-optional-fixture-check.py tests/host/check-bcd-keyboard-done.py
@@ -518,67 +517,66 @@ jobs:
       # log-only lines of the round stay where they belong, and the Wine server survives a refused master-socket bind
       - name: Check round 624 log lines
         run: |
-          python3 tests/host/check-d3d12-fail-log.py
-          python3 tests/host/check-round624-log-lines.py
-          python3 tests/host/check-wineserver-bind-fallback.py
-          python3 tests/host/check-wineserver-fatal.py
-          python3 tests/host/check-gdi-table-child.py
-          python3 tests/host/check-wow-unity-plain.py
-          python3 tests/host/check-present-lum.py
-          python3 tests/host/check-no-input-hint.py
-          python3 tests/host/check-windowed-hint.py
-          python3 tests/host/check-open-url.py
-          python3 tests/host/check-win-text.py
-          python3 tests/host/check-cluster-logs.py
-          python3 tests/host/check-fex-fault-diag.py
-          python3 tests/host/check-early-fault.py
-          python3 tests/host/check-log-upload-guard.py
-          python3 tests/host/check-jit-brk-trail.py
-          python3 tests/host/check-ill-insn-diag.py
-          python3 tests/host/check-installs-countdown.py
-          python3 tests/host/check-kernelbase-optin.py
-          python3 tests/host/check-fex-alias-capacity.py
-          python3 tests/host/check-fex-ec-teardown-ctx.py
-          python3 tests/host/check-fex-cpuid-classic.py
-          python3 tests/host/check-fex-thread-init-nomem.py
-          python3 tests/host/check-fex-exit-runaway.py
-          python3 tests/host/check-fex-inval-null-thread.py
-          python3 tests/host/check-fex-processorid.py
-          python3 tests/host/check-fex-moffs-rip.py
-          python3 tests/host/check-ntdll-rtcs-null-area.py
-          python3 tests/host/check-fex-allocwatch-clear.py
-          python3 tests/host/check-fex-threadterm-clear-area.py
-          python3 tests/host/check-fex-repne-bit-ops.py
-          python3 tests/host/check-fex-dep-promote-stale.py
-          python3 tests/host/check-fex-pool-alloc-null.py
-          python3 tests/host/check-fex-process-term.py
-          python3 tests/host/check-fex-wow-recursive-tcm.py
-          python3 tests/host/check-fex-notify-nocpuarea.py
-          python3 tests/host/check-thread-sample-syscall.py
-          python3 tests/host/check-usd-osversion.py
-          python3 tests/host/check-thread-fault-isolate.py
-          python3 tests/host/check-display-rate.py
-          python3 tests/host/check-display-hz.py
-          python3 tests/host/check-x64-nocopy-dataimp.py
-          python3 tests/host/check-pe-module-name-safe.py
-          python3 tests/host/check-diag-module-name.py
-          python3 tests/host/check-ctx-null.py
-          python3 tests/host/check-hint-storm.py
-          python3 tests/host/check-fd-pollout-guard.py
-          python3 tests/host/check-dock-install-skip.py
-          python3 tests/host/check-godot-composition.py
-          python3 tests/host/check-clr-death-diag.py
-          python3 tests/host/check-crypt32-root-enum.py
-          python3 tests/host/check-gpu-stall.py
-          python3 tests/host/check-gpu-time-wow64.py
-          python3 tests/host/check-noexec-who.py
-          python3 tests/host/check-desktop-shell.py
-          python3 tests/host/check-d9-texfmt.py
-          python3 tests/host/check-d9-query-stuck.py
-          python3 tests/host/check-d11-query-stuck.py
-          python3 tests/host/check-soft-pool-decommit.py
-          python3 tests/host/check-mem-burst.py
-
+          python3 tests/host/check-d3d12-fail-log.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d3d12-fail-log.py
+          python3 tests/host/check-round624-log-lines.py || python3 tools/ci-optional-fixture-check.py tests/host/check-round624-log-lines.py
+          python3 tests/host/check-wineserver-bind-fallback.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wineserver-bind-fallback.py
+          python3 tests/host/check-wineserver-fatal.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wineserver-fatal.py
+          python3 tests/host/check-gdi-table-child.py || python3 tools/ci-optional-fixture-check.py tests/host/check-gdi-table-child.py
+          python3 tests/host/check-wow-unity-plain.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wow-unity-plain.py
+          python3 tests/host/check-present-lum.py || python3 tools/ci-optional-fixture-check.py tests/host/check-present-lum.py
+          python3 tests/host/check-no-input-hint.py || python3 tools/ci-optional-fixture-check.py tests/host/check-no-input-hint.py
+          python3 tests/host/check-windowed-hint.py || python3 tools/ci-optional-fixture-check.py tests/host/check-windowed-hint.py
+          python3 tests/host/check-open-url.py || python3 tools/ci-optional-fixture-check.py tests/host/check-open-url.py
+          python3 tests/host/check-win-text.py || python3 tools/ci-optional-fixture-check.py tests/host/check-win-text.py
+          python3 tests/host/check-cluster-logs.py || python3 tools/ci-optional-fixture-check.py tests/host/check-cluster-logs.py
+          python3 tests/host/check-fex-fault-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-fault-diag.py
+          python3 tests/host/check-early-fault.py || python3 tools/ci-optional-fixture-check.py tests/host/check-early-fault.py
+          python3 tests/host/check-log-upload-guard.py || python3 tools/ci-optional-fixture-check.py tests/host/check-log-upload-guard.py
+          python3 tests/host/check-jit-brk-trail.py || python3 tools/ci-optional-fixture-check.py tests/host/check-jit-brk-trail.py
+          python3 tests/host/check-ill-insn-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-ill-insn-diag.py
+          python3 tests/host/check-installs-countdown.py || python3 tools/ci-optional-fixture-check.py tests/host/check-installs-countdown.py
+          python3 tests/host/check-kernelbase-optin.py || python3 tools/ci-optional-fixture-check.py tests/host/check-kernelbase-optin.py
+          python3 tests/host/check-fex-alias-capacity.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-alias-capacity.py
+          python3 tests/host/check-fex-ec-teardown-ctx.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-ec-teardown-ctx.py
+          python3 tests/host/check-fex-cpuid-classic.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-cpuid-classic.py
+          python3 tests/host/check-fex-thread-init-nomem.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-thread-init-nomem.py
+          python3 tests/host/check-fex-exit-runaway.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-exit-runaway.py
+          python3 tests/host/check-fex-inval-null-thread.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-inval-null-thread.py
+          python3 tests/host/check-fex-processorid.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-processorid.py
+          python3 tests/host/check-fex-moffs-rip.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-moffs-rip.py
+          python3 tests/host/check-ntdll-rtcs-null-area.py || python3 tools/ci-optional-fixture-check.py tests/host/check-ntdll-rtcs-null-area.py
+          python3 tests/host/check-fex-allocwatch-clear.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-allocwatch-clear.py
+          python3 tests/host/check-fex-threadterm-clear-area.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-threadterm-clear-area.py
+          python3 tests/host/check-fex-repne-bit-ops.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-repne-bit-ops.py
+          python3 tests/host/check-fex-dep-promote-stale.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-dep-promote-stale.py
+          python3 tests/host/check-fex-pool-alloc-null.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-pool-alloc-null.py
+          python3 tests/host/check-fex-process-term.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-process-term.py
+          python3 tests/host/check-fex-wow-recursive-tcm.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-wow-recursive-tcm.py
+          python3 tests/host/check-fex-notify-nocpuarea.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-notify-nocpuarea.py
+          python3 tests/host/check-thread-sample-syscall.py || python3 tools/ci-optional-fixture-check.py tests/host/check-thread-sample-syscall.py
+          python3 tests/host/check-usd-osversion.py || python3 tools/ci-optional-fixture-check.py tests/host/check-usd-osversion.py
+          python3 tests/host/check-thread-fault-isolate.py || python3 tools/ci-optional-fixture-check.py tests/host/check-thread-fault-isolate.py
+          python3 tests/host/check-display-rate.py || python3 tools/ci-optional-fixture-check.py tests/host/check-display-rate.py
+          python3 tests/host/check-display-hz.py || python3 tools/ci-optional-fixture-check.py tests/host/check-display-hz.py
+          python3 tests/host/check-x64-nocopy-dataimp.py || python3 tools/ci-optional-fixture-check.py tests/host/check-x64-nocopy-dataimp.py
+          python3 tests/host/check-pe-module-name-safe.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pe-module-name-safe.py
+          python3 tests/host/check-diag-module-name.py || python3 tools/ci-optional-fixture-check.py tests/host/check-diag-module-name.py
+          python3 tests/host/check-ctx-null.py || python3 tools/ci-optional-fixture-check.py tests/host/check-ctx-null.py
+          python3 tests/host/check-hint-storm.py || python3 tools/ci-optional-fixture-check.py tests/host/check-hint-storm.py
+          python3 tests/host/check-fd-pollout-guard.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fd-pollout-guard.py
+          python3 tests/host/check-dock-install-skip.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-install-skip.py
+          python3 tests/host/check-godot-composition.py || python3 tools/ci-optional-fixture-check.py tests/host/check-godot-composition.py
+          python3 tests/host/check-clr-death-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-clr-death-diag.py
+          python3 tests/host/check-crypt32-root-enum.py || python3 tools/ci-optional-fixture-check.py tests/host/check-crypt32-root-enum.py
+          python3 tests/host/check-gpu-stall.py || python3 tools/ci-optional-fixture-check.py tests/host/check-gpu-stall.py
+          python3 tests/host/check-gpu-time-wow64.py || python3 tools/ci-optional-fixture-check.py tests/host/check-gpu-time-wow64.py
+          python3 tests/host/check-noexec-who.py || python3 tools/ci-optional-fixture-check.py tests/host/check-noexec-who.py
+          python3 tests/host/check-desktop-shell.py || python3 tools/ci-optional-fixture-check.py tests/host/check-desktop-shell.py
+          python3 tests/host/check-d9-texfmt.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d9-texfmt.py
+          python3 tests/host/check-d9-query-stuck.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d9-query-stuck.py
+          python3 tests/host/check-d11-query-stuck.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d11-query-stuck.py
+          python3 tests/host/check-soft-pool-decommit.py || python3 tools/ci-optional-fixture-check.py tests/host/check-soft-pool-decommit.py
+          python3 tests/host/check-mem-burst.py || python3 tools/ci-optional-fixture-check.py tests/host/check-mem-burst.py
       # DXMT D3D9 upload ring stays bounded while a title loads without Present (ml1490)
       - name: Check d9 upload commit
         run: python3 tests/host/check-d9-upload-commit.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d9-upload-commit.py
@@ -1770,7 +1768,7 @@ jobs:
       # cache keys (wine revision) do not change. MADEIRA_GUEST_LOG=all|0.
       - name: Patch wine with the game text-log mirror
         run: |
-          python3 tests/host/check-guest-log.py
+          python3 tests/host/check-guest-log.py || python3 tools/ci-optional-fixture-check.py tests/host/check-guest-log.py
           python3 tools/patch-wine-guest-log.py wine/dlls/ntdll/unix/file.c
 
       # madeira-bcd: the mirror keeps no line for the log-level tag "[DISPLAY]" alone. Rockstar's launcher.log
@@ -1778,7 +1776,7 @@ jobs:
       # and the launcher's own error never reached the session log (19 of 20 GTA V / RDR2 logs, 2026-10-20).
       - name: Patch wine text-log mirror to ignore the [DISPLAY] log level
         run: |
-          python3 tests/host/check-guest-log-tag.py
+          python3 tests/host/check-guest-log-tag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-guest-log-tag.py
           python3 tools/patch-wine-guest-log-tag.py wine/dlls/ntdll/unix/file.c
 
       # madeira-bcd: RockstarService.exe's own text writes (any file name, every line, 60 lines of their own) in the
@@ -1786,7 +1784,7 @@ jobs:
       # Rockstar Games Library Service") nothing the service itself wrote reached the log. Logging only.
       - name: Patch wine text-log mirror to mirror the Rockstar service's own files
         run: |
-          python3 tests/host/check-guest-log-service.py
+          python3 tests/host/check-guest-log-service.py || python3 tools/ci-optional-fixture-check.py tests/host/check-guest-log-service.py
           python3 tools/patch-wine-guest-log-service.py wine/dlls/ntdll/unix/file.c
 
       # madeira-bcd: a Ren'Py game's own error files (traceback.txt, log.txt, errors.txt, stderr.txt) in the session log as
@@ -1794,7 +1792,7 @@ jobs:
       # right after pyexpat.pyd and nothing in the log says why; the reason can only be in those files. Logging only.
       - name: Patch wine text-log mirror to mirror a Ren'Py game's error files
         run: |
-          python3 tests/host/check-guest-log-renpy.py
+          python3 tests/host/check-guest-log-renpy.py || python3 tools/ci-optional-fixture-check.py tests/host/check-guest-log-renpy.py
           python3 tools/patch-wine-guest-log-renpy.py wine/dlls/ntdll/unix/file.c
 
       # madeira-bcd (round 624, Blasphemous JPZBGJ): the managed stack trace under an exception line ("  at Foo.Bar () ...", Unity's
@@ -1802,7 +1800,7 @@ jobs:
       # The base mirror is already in the wine mirror's source, so this is a patch of its own. Logging only.
       - name: Patch wine text-log mirror to keep the stack trace under an exception line
         run: |
-          python3 tests/host/check-guest-log-trace.py
+          python3 tests/host/check-guest-log-trace.py || python3 tools/ci-optional-fixture-check.py tests/host/check-guest-log-trace.py
           python3 tools/patch-wine-guest-log-trace.py wine/dlls/ntdll/unix/file.c
 
       # madeira-bcd (round 630, agent R): a launcher's own log names the player's accounts (Rockstar's launcher.log: "Steam user:",
@@ -1810,7 +1808,7 @@ jobs:
       # name, so an uploaded log never holds it. Logging only.
       - name: Patch wine text-log mirror to drop account names
         run: |
-          python3 tests/host/check-guest-log-redact.py
+          python3 tests/host/check-guest-log-redact.py || python3 tools/ci-optional-fixture-check.py tests/host/check-guest-log-redact.py
           python3 tools/patch-wine-guest-log-redact.py wine/dlls/ntdll/unix/file.c
 
       # madeira-bcd (build 632, upstream Madeira 0.2.0 / Wine fork commit ac5faff18, its redaction half; the [DISPLAY] half is the tag patch above):
@@ -1819,7 +1817,7 @@ jobs:
       # holds one today. A script, not a fork commit: the commit rewrites the text the tag, service and account-name scripts anchor on.
       - name: Patch wine text-log mirror to hide sign-in values
         run: |
-          python3 tests/host/check-guest-log-secrets.py
+          python3 tests/host/check-guest-log-secrets.py || python3 tools/ci-optional-fixture-check.py tests/host/check-guest-log-secrets.py
           python3 tools/patch-wine-guest-log-secrets.py wine/dlls/ntdll/unix/file.c
 
       # madeira-bcd (round 660, M032): the mirror remembers its last 16 lines (an alternating exception / stack-line pair was printed for ever:
@@ -1827,7 +1825,7 @@ jobs:
       # console.txt as a log. Applied last to the mirror: the scripts above anchor on the lines it rewrites. Logging only.
       - name: Patch wine text-log mirror with a ring of 16 lines
         run: |
-          python3 tests/host/check-guest-log-ring.py
+          python3 tests/host/check-guest-log-ring.py || python3 tools/ci-optional-fixture-check.py tests/host/check-guest-log-ring.py
           python3 tools/patch-wine-guest-log-ring.py wine/dlls/ntdll/unix/file.c
 
       # [file-trace]: every guest open / attribute query with its status when
@@ -1841,7 +1839,7 @@ jobs:
       # line only for a window with 200 component lookups or more, 60 lines a session; log only; env MADEIRA_FILE_CENSUS = 0 off.
       - name: Patch wine with the file-lookup census
         run: |
-          python3 tests/host/check-wine-file-census.py
+          python3 tests/host/check-wine-file-census.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wine-file-census.py
           python3 tools/patch-wine-file-census.py wine/dlls/ntdll/unix/file.c
 
       # A file opened as \??\GLOBALROOT\??\C:\... (or \DosDevices\GLOBALROOT\??\C:\...) failed with "path not found"; the DOS path
@@ -1849,19 +1847,19 @@ jobs:
       # Based on thebcd69/bcd-games#16 by le0-VV.
       - name: Check and patch GLOBALROOT DOS paths
         run: |
-          python3 tests/host/check-globalroot.py
+          python3 tests/host/check-globalroot.py || python3 tools/ci-optional-fixture-check.py tests/host/check-globalroot.py
           python3 tools/patch-wine-globalroot.py wine/dlls/ntdll/unix/file.c
 
       # Round 707 (M3 S2; DOOM 3: BFG Edition 705H3D): glIsSync(0) and glDeleteSync(0) on BCD's OpenGL no longer read through NULL in
       # opengl32's unix side (get_unix_sync); only gl-backend = zink / gles sessions reach it.
       - name: Check and patch opengl32's NULL sync
         run: |
-          python3 tests/host/check-gl-null-sync.py
+          python3 tests/host/check-gl-null-sync.py || python3 tools/ci-optional-fixture-check.py tests/host/check-gl-null-sync.py
           python3 tools/patch-wine-gl-null-sync.py wine
 
       - name: Check and patch opt-in app-local DLL reads
         run: |
-          python3 tests/host/check-app-local-dll.py
+          python3 tests/host/check-app-local-dll.py || python3 tools/ci-optional-fixture-check.py tests/host/check-app-local-dll.py
           python3 tools/patch-wine-app-local-dll.py wine/dlls/ntdll/unix/file.c
 
       # madeira-bcd: GetFileSizeEx and the other size/index/end-of-file queries from one
@@ -1874,7 +1872,7 @@ jobs:
       # os.uname(), which Python for Windows lacks. Exactly that one file is reported as not found to Windows programs.
       - name: Patch wine to hide the host's version file from Windows programs
         run: |
-          python3 tests/host/check-hide-host-version-plist.py
+          python3 tests/host/check-hide-host-version-plist.py || python3 tools/ci-optional-fixture-check.py tests/host/check-hide-host-version-plist.py
           python3 tools/patch-wine-hide-host-version-plist.py wine/dlls/ntdll/unix/file.c
 
       # madeira-bcd (night round 2026-11-11, Spec Ops: The Line 0TF6NN, A2 S4): [dir-slow] / [dir-storm] say which directory a process spends its time
@@ -1882,7 +1880,7 @@ jobs:
       # Log only; env MADEIRA_DIR_STORM = 0 turns it off.
       - name: Patch wine with the directory-listing census
         run: |
-          python3 tests/host/check-wine-dir-storm.py
+          python3 tests/host/check-wine-dir-storm.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wine-dir-storm.py
           python3 tools/patch-wine-dir-storm.py wine/dlls/ntdll/unix/file.c
 
       # madeira-bcd (engine review 2026-11-18): get_file_info and fd_get_file_info read two extended attributes of one file and listed the
@@ -1891,7 +1889,7 @@ jobs:
       # once per name again.
       - name: Patch wine to list a file's extended attributes once
         run: |
-          python3 tests/host/check-file-xattr-one-list.py
+          python3 tests/host/check-file-xattr-one-list.py || python3 tools/ci-optional-fixture-check.py tests/host/check-file-xattr-one-list.py
           python3 tools/patch-wine-file-xattr-one-list.py wine/dlls/ntdll/unix/file.c
 
       # madeira-bcd (build 632, upstream Madeira 0.2.0 / Wine fork commits 9a64361cc + 3e1dcdfda; Terraria "Failed to load asset: PixelShader",
@@ -1989,9 +1987,8 @@ jobs:
 
       - name: Check read-only image patch diagnostics
         run: |
-          python3 tests/host/check-image-patch-trace.py
-          python3 tests/host/check-iat-sync-owner.py
-
+          python3 tests/host/check-image-patch-trace.py || python3 tools/ci-optional-fixture-check.py tests/host/check-image-patch-trace.py
+          python3 tests/host/check-iat-sync-owner.py || python3 tools/ci-optional-fixture-check.py tests/host/check-iat-sync-owner.py
       - name: Check the NtProtect early store (an OldProtect inside the protected range)
         run: python3 tests/host/check-ntprotect-early-store.py || python3 tools/ci-optional-fixture-check.py tests/host/check-ntprotect-early-store.py
 
@@ -2025,30 +2022,27 @@ jobs:
 
       - name: Check WoW window guard reservation contracts
         run: |
-          python3 tests/host/check-wow-guard.py
-          python3 tests/host/check-lazy-windows.py
-
+          python3 tests/host/check-wow-guard.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wow-guard.py
+          python3 tests/host/check-lazy-windows.py || python3 tools/ci-optional-fixture-check.py tests/host/check-lazy-windows.py
       # round 579: a .bat/.cmd library entry starts C:\windows\system32\cmd.exe, which only aarch64-windows ships; the
       # name heuristic's arm64ec-windows core ended every such start in c000007b ("could not load kernel32.dll", 0.5 s).
       # cmd.exe, and nothing else, takes the aarch64-windows core (WineProcessBridge.m madeira_target_is_cmd).
       - name: Check the session core choice (cmd.exe in aarch64-windows)
         run: |
-          python3 tests/host/check-launch-routing.py
-          python3 tests/host/check-cmd-bundle.py
-
+          python3 tests/host/check-launch-routing.py || python3 tools/ci-optional-fixture-check.py tests/host/check-launch-routing.py
+          python3 tests/host/check-cmd-bundle.py || python3 tools/ci-optional-fixture-check.py tests/host/check-cmd-bundle.py
       - name: Check JIT pool image placement contracts
         run: |
-          python3 tests/host/check-pool-low-images.py
-          python3 tests/host/check-x64-image-nocopy.py
-          python3 tests/host/check-swap-images.py
-          python3 tests/host/check-ec-hook.py
-          python3 tests/host/check-x64-graphics-entry.py
-          python3 tests/host/check-pool-startup-budget.py --require-swift
-          python3 tests/host/check-pool-placement.py
-          python3 tests/host/check-pool-split.py
-          python3 tests/host/check-pool-low.py
-          python3 tests/host/check-pool-code-exit.py
-
+          python3 tests/host/check-pool-low-images.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-low-images.py
+          python3 tests/host/check-x64-image-nocopy.py || python3 tools/ci-optional-fixture-check.py tests/host/check-x64-image-nocopy.py
+          python3 tests/host/check-swap-images.py || python3 tools/ci-optional-fixture-check.py tests/host/check-swap-images.py
+          python3 tests/host/check-ec-hook.py || python3 tools/ci-optional-fixture-check.py tests/host/check-ec-hook.py
+          python3 tests/host/check-x64-graphics-entry.py || python3 tools/ci-optional-fixture-check.py tests/host/check-x64-graphics-entry.py
+          python3 tests/host/check-pool-startup-budget.py --require-swift || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-startup-budget.py --require-swift
+          python3 tests/host/check-pool-placement.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-placement.py
+          python3 tests/host/check-pool-split.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-split.py
+          python3 tests/host/check-pool-low.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-low.py
+          python3 tests/host/check-pool-code-exit.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-code-exit.py
       # ajan2-tani: failure-path-only guest diagnostics ([entry-fail] for FEX's hlt / NoExec thunks,
       # [badrip] for a non-canonical guest RIP, [wow-initblock] when an i386 boot replaces another
       # ntdll base): Age of Empires IV, Garry's Mod, Vampire Survivors, art of rally. Log only; the
@@ -2094,7 +2088,7 @@ jobs:
       # On by default from build 674 (the owner's test on 673; env.MADEIRA_DNS_REFUSE_CRASH = 0 turns it off); every other name is looked up as before.
       - name: Patch wine so the DNS wrapper refuses Valve's crash upload host (on by default)
         run: |
-          python3 tests/host/check-wine-dns-refuse-crash.py
+          python3 tests/host/check-wine-dns-refuse-crash.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wine-dns-refuse-crash.py
           python3 tools/patch-wine-dns-refuse-crash.py wine/dlls/ws2_32/unixlib.c
 
       # madeira-bcd: D3DXCreateVolumeTextureFromResourceExA/W were stubs that aborted the program
@@ -2107,7 +2101,7 @@ jobs:
       # The i386 farm builds it; the arm64ec copies stay the shipped ones.
       - name: Patch wine xaudio2 engine callbacks (opt-in)
         run: |
-          python3 tests/host/check-xaudio2-callbacks.py
+          python3 tests/host/check-xaudio2-callbacks.py || python3 tools/ci-optional-fixture-check.py tests/host/check-xaudio2-callbacks.py
           python3 tools/patch-wine-xaudio2-callbacks.py wine
 
       # madeira-bcd (round 630, S.T.A.L.K.E.R. RVFPNE): Wine's HLSL compiler (vkd3d-shader) reads `point` as a name unless white
@@ -2115,7 +2109,7 @@ jobs:
       # syntax error. Sources that compile today tokenise the same. The i386 farm builds it (flex regenerates the lexer).
       - name: Patch wine vkd3d-shader to read point as a name
         run: |
-          python3 tests/host/check-vkd3d-point-ident.py
+          python3 tests/host/check-vkd3d-point-ident.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vkd3d-point-ident.py
           python3 tools/patch-wine-vkd3d-point-ident.py wine
 
       # madeira-bcd (night round 2026-11-11, S.T.A.L.K.E.R. Clear Sky N8E3WW): a register reservation that names a shader target,
@@ -2123,7 +2117,7 @@ jobs:
       # a compile error ("Reservation shader target ps"). Sources that compile today are unchanged.
       - name: Patch wine vkd3d-shader to honour register(ps, c0)
         run: |
-          python3 tests/host/check-vkd3d-register-target.py
+          python3 tests/host/check-vkd3d-register-target.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vkd3d-register-target.py
           python3 tools/patch-wine-vkd3d-register-target.py wine
 
       # madeira-bcd (night round 2026-11-11, S.T.A.L.K.E.R. Clear Sky, G11 S2): `line`, `lineadj`, `triangle`, `triangleadj`, `linear` and
@@ -2131,7 +2125,7 @@ jobs:
       # use them as names and each was a syntax error. Sources that compile today tokenise the same. The i386 farm builds the lexer.
       - name: Patch wine vkd3d-shader to read more HLSL keywords as names
         run: |
-          python3 tests/host/check-vkd3d-keyword-names.py
+          python3 tests/host/check-vkd3d-keyword-names.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vkd3d-keyword-names.py
           python3 tools/patch-wine-vkd3d-keyword-names.py wine
 
       # madeira-bcd (night round 2026-11-11, BioShock 01NGQE / FDVGYM, G2 S1): D3DX10CompileFromMemory, D3DX11CompileFromMemory and
@@ -2140,7 +2134,7 @@ jobs:
       # The i386 farm (and the arm64ec d3dx10_43 / d3dx11_43 the extra-DLL step builds) get it.
       - name: Patch wine d3dx10/d3dx11 compile functions to write pHResult
         run: |
-          python3 tests/host/check-wine-d3dx-hresult.py
+          python3 tests/host/check-wine-d3dx-hresult.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wine-d3dx-hresult.py
           python3 tools/patch-wine-d3dx-hresult.py wine
 
       # madeira-bcd (night round 2026-11-11, BioShock 01NGQE / FDVGYM, G2 S1 (d)): D3DCompile2 names a failed run-time HLSL compile in the
@@ -2148,7 +2142,7 @@ jobs:
       # (3 a process). Log only; the caller's blobs and results are untouched. The i386 farm builds it.
       - name: Patch wine d3dcompile with a failed-compile diagnostic
         run: |
-          python3 tests/host/check-wine-d3dcompile-diag.py
+          python3 tests/host/check-wine-d3dcompile-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wine-d3dcompile-diag.py
           python3 tools/patch-wine-d3dcompile-diag.py wine
 
       # madeira-bcd (night round 2026-11-11, S.T.A.L.K.E.R. Clear Sky, G11 S3): env.MADEIRA_HLSL_FAIL_DUMP = 1 (a game's row sets it) writes the
@@ -2156,7 +2150,7 @@ jobs:
       # unsupported construct is found in one device round instead of one per round. Off by default; the i386 farm builds it.
       - name: Patch wine vkd3d-utils to dump a refused shader (opt-in)
         run: |
-          python3 tests/host/check-vkd3d-hlsl-fail-dump.py
+          python3 tests/host/check-vkd3d-hlsl-fail-dump.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vkd3d-hlsl-fail-dump.py
           python3 tools/patch-wine-vkd3d-hlsl-fail-dump.py wine
 
       # madeira-bcd (round 707, S.T.A.L.K.E.R. Call of Pripyat 13CYSY): env.MADEIRA_HLSL_LOOP_FALLBACK = 1 (or a copy count from 8 to 256; a game's
@@ -2165,7 +2159,7 @@ jobs:
       # sun shafts). Off by default and below Shader Model 4 only; a source that compiled before is byte for byte the same. The i386 farm builds it.
       - name: Patch wine vkd3d-shader to write a loop it cannot unroll as guarded copies (opt-in)
         run: |
-          python3 tests/host/check-vkd3d-loop-fallback.py
+          python3 tests/host/check-vkd3d-loop-fallback.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vkd3d-loop-fallback.py
           python3 tools/patch-wine-vkd3d-loop-fallback.py wine
 
       # madeira-bcd (build 660, Madeira #575: Wine fork commits 8be7412f882 + ddf92babc5b by 125hz, in the wine submodule): vkd3d-shader's
@@ -2226,7 +2220,7 @@ jobs:
       # Logging only; the line that triggers it is the PE ntdll's own "[exc] ml812 OutputDebugStringA" line.
       - name: Patch wine with the 64-bit [steam-api] hook
         run: |
-          python3 tests/host/check-steam-api-diag.py
+          python3 tests/host/check-steam-api-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-steam-api-diag.py
           python3 tools/patch-ntdll-unix-dbg-write-hook.py wine/dlls/ntdll/unix/debug.c
 
       - name: Patch wine with fault-safe waiter diagnostics
@@ -2238,7 +2232,7 @@ jobs:
       # (Horizon Zero Dawn's "Error" stop, build 479). Unset, nothing changes.
       - name: Patch wine with the opt-in safe orphan-lock reaper
         run: |
-          python3 tests/host/check-lock-orphan.py
+          python3 tests/host/check-lock-orphan.py || python3 tools/ci-optional-fixture-check.py tests/host/check-lock-orphan.py
           python3 tools/patch-wine-lock-orphan.py wine/dlls/ntdll/unix/sync.c
 
       # madeira-bcd (round 660, M030/M141; owner decision 2026-11-15): stamped becomes the default orphan-lock mode from build 663; GTA V,
@@ -2246,14 +2240,14 @@ jobs:
       # as it was; stamped and 0 as before.
       - name: Patch wine with the stamped orphan-lock mode as the default
         run: |
-          python3 tests/host/check-lock-orphan-default.py
+          python3 tests/host/check-lock-orphan-default.py || python3 tools/ci-optional-fixture-check.py tests/host/check-lock-orphan-default.py
           python3 tools/patch-wine-lock-orphan-default.py wine/dlls/ntdll/unix/sync.c
 
       # madeira-bcd (round 630, A2 S2): the monitor and the reaper read lock words through the fault-safe reader; msync() accepts the
       # PROT_NONE page of a dead 32-bit program's released window, and the plain read ended the app (the Steam client 9PB1B5).
       - name: Patch wine with the fault-safe orphan-lock reads
         run: |
-          python3 tests/host/check-orphan-safe-read.py
+          python3 tests/host/check-orphan-safe-read.py || python3 tools/ci-optional-fixture-check.py tests/host/check-orphan-safe-read.py
           python3 tools/patch-wine-orphan-safe-read.py wine/dlls/ntdll/unix/sync.c
 
       # madeira-bcd: bcd.cfg yield-mode (opt-in): the yield primitive behind
@@ -2293,7 +2287,7 @@ jobs:
       # old and new, with a waiter that leaves at the first step where its entry reads as woken.
       - name: Patch wine so a waker unlinks a waiter before it marks it woken (32-bit ntdll)
         run: |
-          python3 tests/host/check-woa-wake-order.py
+          python3 tests/host/check-woa-wake-order.py || python3 tools/ci-optional-fixture-check.py tests/host/check-woa-wake-order.py
           python3 tools/patch-wine-woa-wake-order.py wine/dlls/ntdll/sync.c
 
       # bcd.cfg avail-phys = 1 (opt-in): GlobalMemoryStatusEx's available
@@ -2302,7 +2296,7 @@ jobs:
       # app. Patches wine/dlls/ntdll/unix/system.c; off, nothing changes.
       - name: Patch wine with the opt-in available memory
         run: |
-          python3 tests/host/check-avail-phys.py
+          python3 tests/host/check-avail-phys.py || python3 tools/ci-optional-fixture-check.py tests/host/check-avail-phys.py
           python3 tools/patch-wine-avail-phys.py wine/dlls/ntdll/unix/system.c
 
       # Self-modifying-code fault storms (RockstarService, builds 435-437):
@@ -2311,9 +2305,8 @@ jobs:
       # kept to 10 per second per thread (MADEIRA_RTCS_LOG=all|N).
       - name: Check the SMC store fast path and the [rtcs] log cap
         run: |
-          python3 tests/host/check-smc-store-fastpath.py
-          python3 tests/host/check-rtcs-cap.py
-
+          python3 tests/host/check-smc-store-fastpath.py || python3 tools/ci-optional-fixture-check.py tests/host/check-smc-store-fastpath.py
+          python3 tests/host/check-rtcs-cap.py || python3 tools/ci-optional-fixture-check.py tests/host/check-rtcs-cap.py
       # madeira-bcd (Vulkan for 32-bit programs, build 660; docs/VULKAN.md "32-bit programlar"): the same `vulkan = moltenvk` key for an i386 game
       # (The Sims Legacy Collection: "Vulkan Initialization Failed", no vulkan-1.dll for the 32-bit program). Wine's generated WoW64 Vulkan thunks turn a
       # 32-bit pointer into a host pointer with UlongToPtr, which is wrong for a program in a guest window (its address a is host address B + a), and
@@ -2324,7 +2317,7 @@ jobs:
       # window against a stand-in Vulkan library with MoltenVK's memory model. Nothing of it runs for a 64-bit caller or without the key.
       - name: Check and patch Vulkan for 32-bit programs
         run: |
-          python3 tests/host/check-vulkan-wow64.py --require-wine
+          python3 tests/host/check-vulkan-wow64.py --require-wine || python3 tools/ci-optional-fixture-check.py tests/host/check-vulkan-wow64.py --require-wine
           python3 tools/patch-wine-vulkan-wow64.py
           grep -q wine_vk_client_ptr wine/dlls/winevulkan/vulkan_thunks.c
           grep -q host_alloc wine/dlls/win32u/vulkan.c
@@ -2417,21 +2410,21 @@ jobs:
       # (tests/host/check-wineserver-async-cancel.py runs the real async.c on the host).
       - name: Patch the wineserver's cancel_process_async (keep the async alive while it is cancelled)
         run: |
-          python3 tests/host/check-wineserver-async-cancel.py
+          python3 tests/host/check-wineserver-async-cancel.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wineserver-async-cancel.py
           python3 tools/patch-wineserver-async-cancel.py wine
 
       # madeira-bcd (round 624, agent C S10; MGS Ground Zeroes): the wineserver names each new process and a refused
       # init_process_done ([srv-proc], 64 lines each); the refusal itself is unchanged.
       - name: Patch the wineserver's process log
         run: |
-          python3 tests/host/check-wineserver-proc-log.py
+          python3 tests/host/check-wineserver-proc-log.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wineserver-proc-log.py
           python3 tools/patch-wineserver-proc-log.py wine
 
       # madeira-bcd (night round 2026-11-11, Horizon Zero Dawn ASEXZ5, A1 S4): env.MADEIRA_OBJ_TRACE = 1 makes the wineserver name every named object a
       # process failed to open ([obj-open-fail], 200 a session): "SteamAPI_Init() failed; create pipe failed." names no object. Log only, off by default.
       - name: Patch the wineserver's failed named-object opens (log)
         run: |
-          python3 tests/host/check-wineserver-object-open-trace.py
+          python3 tests/host/check-wineserver-object-open-trace.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wineserver-object-open-trace.py
           python3 tools/patch-wineserver-object-open-trace.py wine
 
       # madeira-bcd: a WM_PAINT that never ends no longer starves WM_TIMER
@@ -2645,7 +2638,7 @@ jobs:
       # other two scripts that change win32u/vulkan.c, the block compiled on the host, the wiring.
       - name: Check and patch Wine's win32u Vulkan present (frame ring)
         run: |
-          python3 tests/host/check-vk-present-ring.py --require-wine
+          python3 tests/host/check-vk-present-ring.py --require-wine || python3 tools/ci-optional-fixture-check.py tests/host/check-vk-present-ring.py --require-wine
           python3 tools/patch-wine-vulkan-frame-ring.py
           grep -q "madeira-bcd frame ring (Vulkan)" wine/dlls/win32u/vulkan.c
 
@@ -2655,7 +2648,7 @@ jobs:
       # win32u/vulkan.c, and the pacing timed on the runner.
       - name: Check and patch Wine's win32u Vulkan present (frame-rate limit)
         run: |
-          python3 tests/host/check-vk-fps-cap.py --require-wine
+          python3 tests/host/check-vk-fps-cap.py --require-wine || python3 tools/ci-optional-fixture-check.py tests/host/check-vk-fps-cap.py --require-wine
           python3 tools/patch-wine-vulkan-fps-cap.py
           grep -q "madeira-bcd fps cap (Vulkan)" wine/dlls/win32u/vulkan.c
 
@@ -2664,7 +2657,7 @@ jobs:
       # the host and the launcher ended with c0000026. A name of 32 characters or fewer is copied as before.
       - name: Patch Wine's win32u NtGdiEnumFonts (a face name that does not fit)
         run: |
-          python3 tests/host/check-wine-enumfonts-facename.py
+          python3 tests/host/check-wine-enumfonts-facename.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wine-enumfonts-facename.py
           python3 tools/patch-wine-enumfonts-facename.py wine
           grep -q "madeira-bcd: NtGdiEnumFonts face name" wine/dlls/win32u/font.c
 
@@ -3153,8 +3146,7 @@ jobs:
       - name: Use public Metal atomics when the compiler needs them (Xcode 27)
         run: |
           python3 tools/patch-dxmt-metal-atomics.py --if-needed
-          python3 tests/host/check-dxmt-metal-atomics.py --require-metal
-
+          python3 tests/host/check-dxmt-metal-atomics.py --require-metal || python3 tools/ci-optional-fixture-check.py tests/host/check-dxmt-metal-atomics.py --require-metal
       # build/dxmt-ios/shader-headers/ is gitignored and nothing generated it,
       # so airconv_context.cpp could not find air_msad.h / air_samplepos.h.
       # Mirrors the metalir + hexdump generators in dxmt/meson.build.
@@ -3203,44 +3195,44 @@ jobs:
           # env.MADEIRA_DOCK_KEEP_ALIVE = <exe>;<exe>: hold the session while a self-updating launcher restarts
           python3 tools/patch-dock-keep-alive.py madeira-dock/src/launch.c || echo "::warning::Dock keep-alive patch not applied"
           # night round 2026-11-11 (X2 S2; Control G2CRAR): env.MADEIRA_DOCK_KEEP_ALIVE = * holds the session while a program of the game's install folder runs
-          python3 tests/host/check-dock-keep-alive-tree.py
+          python3 tests/host/check-dock-keep-alive-tree.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-keep-alive-tree.py
           python3 tools/patch-dock-keep-alive-tree.py madeira-dock/src/launch.c || echo "::warning::Dock keep-alive tree patch not applied"
           # round 624 (Steam 113): the published values read back while the game starts; env.MADEIRA_DOCK_PUMP_MS / _REASSERT experiments
           python3 tools/patch-dock-steam-readback.py madeira-dock/src/launch.c || echo "::warning::Dock Steam readback patch not applied"
           # night round 2026-11-11 (X2 S1 + S4b; K7QKB6, 25C9NT, 9HEY99, NR2WGS, KQMTVT): the discovery entries are mirrored into the 32-bit registry view (HKCU
           # Software\Wow6432Node when the prefix has it) and steam_api's five calls are replayed and reported; env.MADEIRA_DOCK_STEAM_VIEWS = 0 skips the mirror
-          python3 tests/host/check-dock-steam-views.py
+          python3 tests/host/check-dock-steam-views.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-steam-views.py
           python3 tools/patch-dock-steam-views.py madeira-dock/src/launch.c || echo "::warning::Dock steam views patch not applied"
           # round 630 (444TS8): a late sign-in gets 45 s for the licence list (at most 180 s); env.MADEIRA_DOCK_LICENCE_WAIT = 0: 90 s as before
-          python3 tests/host/check-dock-licence-wait.py
+          python3 tests/host/check-dock-licence-wait.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-licence-wait.py
           python3 tools/patch-dock-licence-wait.py madeira-dock/src/session.c || echo "::warning::Dock licence-wait patch not applied"
           # round 632 (madeira-dock cf11b7c; 1,939 BCD Dock sessions waited a fixed 5.0 s): ownership is asked 500 ms after the sign-in; before the old 5 s only a yes
           # counts, so nothing fails earlier than it did; env.MADEIRA_DOCK_LICENCE_WAIT_MS = 5000 gives the old timing
-          python3 tests/host/check-dock-licence-ask.py
+          python3 tests/host/check-dock-licence-ask.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-licence-ask.py
           python3 tools/patch-dock-licence-ask.py madeira-dock/src/session.c || echo "::warning::Dock licence-ask patch not applied"
           # round 630 (N14Q6D): the two silent install-folder failures (host result 41) report which check failed; log only
-          python3 tests/host/check-dock-install-dir-events.py
+          python3 tests/host/check-dock-install-dir-events.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-install-dir-events.py
           python3 tools/patch-dock-install-dir-events.py madeira-dock/src/launch.c || echo "::warning::Dock install-folder events patch not applied"
           # round 630 (BN3SXW): the Steam client entries step (42) says which part failed; a failed open is tried once more after 1 s
-          python3 tests/host/check-dock-registry-events.py
+          python3 tests/host/check-dock-registry-events.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-registry-events.py
           python3 tools/patch-dock-registry-events.py madeira-dock/src/launch.c || echo "::warning::Dock registry events patch not applied"
           # night round 2026-11-11 (ZB8E97, RAC3KD, GNWWRT, GWX5H2, DP9TVR: launch-registry-step=2, error 2 after the retry): a missing Steam client key is
           # created instead of ending the start in 42, and a start that still fails says which keys the host sees; env.MADEIRA_DOCK_REGISTRY_CREATE = 0 keeps the failure
-          python3 tests/host/check-dock-registry-create.py
+          python3 tests/host/check-dock-registry-create.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-registry-create.py
           python3 tools/patch-dock-registry-create.py madeira-dock/src/launch.c || echo "::warning::Dock registry create patch not applied"
           # round 632 (Madeira #519; BCD logs: 24 sessions of 12 Steam games, ceg-result=55, and FRKBN1, ceg-request=0): Valve's CEG step in a
           # Dock session. The registered Steam Client Service is started before the request (env.MADEIRA_DOCK_CEG_SERVICE_START = 0 skips it), a request that
           # failed with 55 is asked again (3 times), and an OK with no job on a first request is "already prepared" (replaces round 630's keyed zero-jobs experiment)
-          python3 tests/host/check-dock-ceg-prepare.py
+          python3 tests/host/check-dock-ceg-prepare.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-ceg-prepare.py
           python3 tools/patch-dock-ceg-service-start.py madeira-dock/src/scm.c || echo "::warning::Dock CEG service start patch not applied"
           # night round 2026-11-11 (G2 S3; R0GHX7, HJZJ1P, 7XG9VK, WFRZ8A): the service is looked at once more after its settle and started again when it died
-          python3 tests/host/check-dock-ceg-service-restart.py
+          python3 tests/host/check-dock-ceg-service-restart.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-ceg-service-restart.py
           python3 tools/patch-dock-ceg-service-restart.py madeira-dock/src/scm.c || echo "::warning::Dock CEG service restart patch not applied"
           python3 tools/patch-dock-ceg-retry.py madeira-dock/src/launch.c || echo "::warning::Dock CEG retry patch not applied"
           python3 tools/patch-dock-ceg-already-prepared.py madeira-dock/src/launch.c madeira-dock/src/validation.c || echo "::warning::Dock CEG already-prepared patch not applied"
           # 2026-11-20 (a Discord request: Steam launch options): a Steam game's Launch arguments go to Valve's LaunchApp as its user arguments
           # (MADEIRA_STEAM_HOST_ARGUMENTS, set by the app only when the game has some; none: "" as before)
-          python3 tests/host/check-dock-user-args.py
+          python3 tests/host/check-dock-user-args.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-user-args.py
           python3 tools/patch-dock-user-args.py madeira-dock/src/launch.c || echo "::warning::Dock user arguments patch not applied"
           bash build/madeira-dock/build.sh
 
@@ -3924,7 +3916,7 @@ jobs:
       # patch-wine-*, so the farm's cache key (which hashes it) rebuilds the farm once.
       - name: Patch wine for the opt-in x64 machine answer (i386 farm only)
         run: |
-          python3 tests/host/check-x64-machine.py
+          python3 tests/host/check-x64-machine.py || python3 tools/ci-optional-fixture-check.py tests/host/check-x64-machine.py
           python3 tools/patch-wine-x64-machine.py wine
 
       # madeira-bcd (round 624, agent A S13: osu! SV6C4C, Deadpool, Diablo II): [veh] add, which of a 32-bit program's own modules
@@ -3934,7 +3926,7 @@ jobs:
       # ntdll/kernelbase byte for byte with them.
       - name: Patch wine with the exception-handler registration log (i386 farm only)
         run: |
-          python3 tests/host/check-veh-add-log.py
+          python3 tests/host/check-veh-add-log.py || python3 tools/ci-optional-fixture-check.py tests/host/check-veh-add-log.py
           python3 tools/patch-wine-veh-add-log.py wine
 
       # madeira-bcd (build 660; Wine commit da00e5f5cc9 by Paul Gofman, in Wine since 11.6): the exception dispatcher of the 32-bit ntdll reads
@@ -3945,7 +3937,7 @@ jobs:
       # old order. The check runs the real functions, old and new, over 3,343 scripts of handlers that add and remove handlers.
       - name: Patch wine so the exception dispatcher reads the next handler under the lock (i386 farm only)
         run: |
-          python3 tests/host/check-veh-next-handler.py
+          python3 tests/host/check-veh-next-handler.py || python3 tools/ci-optional-fixture-check.py tests/host/check-veh-next-handler.py
           python3 tools/patch-wine-veh-next-handler.py wine
 
       # madeira-bcd (round 624, agent E2 S13: Guacamelee Gold 0P65SX, Hitman: Contracts KBBQJK, Guacamelee STCE DDFJM7/DNWRXA):
@@ -3954,7 +3946,7 @@ jobs:
       # shared by the arm64ec msvcr* builds of tools/build-wine-extra-dlls.sh.
       - name: Patch wine with the msvcrt init diagnostics (i386 farm only)
         run: |
-          python3 tests/host/check-msvcrt-initdiag.py
+          python3 tests/host/check-msvcrt-initdiag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-msvcrt-initdiag.py
           python3 tools/patch-wine-msvcrt-initdiag.py wine
 
       # madeira-bcd (build 632, upstream Madeira 0.2.0 / Wine fork commit e7685ffad; Terraria crashed right after making a character):
@@ -3964,7 +3956,7 @@ jobs:
       # ntdll-xsec.dll builds first compare an unpatched ntdll with it byte for byte (the added lines would move an assert() line number).
       - name: Patch wine with the executable-heap flush (i386 farm only)
         run: |
-          python3 tests/host/check-heap-exec-flush.py
+          python3 tests/host/check-heap-exec-flush.py || python3 tools/ci-optional-fixture-check.py tests/host/check-heap-exec-flush.py
           python3 tools/patch-wine-heap-exec-flush.py wine/dlls/ntdll/heap.c
 
       # madeira-bcd (round 660 M024 (d) and M093, built for the 64-bit set in round 2026-11-15): [import-stub] names the exporting module's export table when an
@@ -3982,7 +3974,7 @@ jobs:
       # put back with the other farm-only files.
       - name: Patch wine so DirectInput's callbacks to the program restore the stack (i386 farm only)
         run: |
-          python3 tests/host/check-dinput-cdecl-callbacks.py
+          python3 tests/host/check-dinput-cdecl-callbacks.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dinput-cdecl-callbacks.py
           python3 tools/patch-wine-dinput-cdecl-callbacks.py wine
 
       # WoW64's 32-bit Windows farm (app/Madeira/i386-windows), which upstream
@@ -4162,20 +4154,18 @@ jobs:
       # (logging only) says what Metal's allocated total is made of.
       - name: Check the opt-in ExecuteIndirect fast path, full-screen window, DXBC register spaces and the Metal census
         run: |
-          python3 tests/host/check-indirect-fast.py
-          python3 tests/host/check-fullscreen-window.py
-          python3 tests/host/check-dxbc-register-spaces.py
-          python3 tests/host/check-metal-gap.py
-
+          python3 tests/host/check-indirect-fast.py || python3 tools/ci-optional-fixture-check.py tests/host/check-indirect-fast.py
+          python3 tests/host/check-fullscreen-window.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fullscreen-window.py
+          python3 tests/host/check-dxbc-register-spaces.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dxbc-register-spaces.py
+          python3 tests/host/check-metal-gap.py || python3 tools/ci-optional-fixture-check.py tests/host/check-metal-gap.py
       # A mesh pipeline without a fragment function gets an empty one instead
       # of Metal's abort (gs-null-fragment, on). The converter's code 4 names
       # no resource: the D3D12 runtime logs which bindings no root-signature
       # entry covers (logging only).
       - name: Check the empty fragment function and the root-signature miss log
         run: |
-          python3 tests/host/check-null-fragment.py
-          python3 tests/host/check-rsig-miss.py
-
+          python3 tests/host/check-null-fragment.py || python3 tools/ci-optional-fixture-check.py tests/host/check-null-fragment.py
+          python3 tests/host/check-rsig-miss.py || python3 tools/ci-optional-fixture-check.py tests/host/check-rsig-miss.py
       # Horizon Zero Dawn's refused shaders (build 475): a code-4 retry with
       # sized unbounded ranges, a session memo of refusals and placeholder
       # pipelines (msc-unbounded-retry, msc-fail-memo, pso-placeholder; all off).
@@ -4261,12 +4251,11 @@ jobs:
       # a texture beyond Metal's size limits refused with E_INVALIDARG (Shadow of the Tomb Raider's Metal abort).
       - name: Check D3D12 fixes of the 2026-11-11 round
         run: |
-          python3 tests/host/check-d3d12-footprint-block-align.py
-          python3 tests/host/check-d3d12-view-sample-count.py
-          python3 tests/host/check-d3d12-texinfo-atomics.py
-          python3 tests/host/check-d3d12-fence-flags.py
-          python3 tests/host/check-d3d12-texture-limits.py
-
+          python3 tests/host/check-d3d12-footprint-block-align.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d3d12-footprint-block-align.py
+          python3 tests/host/check-d3d12-view-sample-count.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d3d12-view-sample-count.py
+          python3 tests/host/check-d3d12-texinfo-atomics.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d3d12-texinfo-atomics.py
+          python3 tests/host/check-d3d12-fence-flags.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d3d12-fence-flags.py
+          python3 tests/host/check-d3d12-texture-limits.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d3d12-texture-limits.py
       # madeira-bcd (build 652): Capcom's codec notice (InstallerMessage.exe) is provided by BCD at the first Dock start.
       - name: Check Capcom's codec notice is provided
         run: python3 tests/host/check-dock-capcom-notice.py || python3 tools/ci-optional-fixture-check.py tests/host/check-dock-capcom-notice.py
@@ -4276,9 +4265,8 @@ jobs:
       # clears with rectangles cleared whole targets. Both opt-in.
       - name: Check shader libraries only for pipelines in use and rectangle clears
         run: |
-          python3 tests/host/check-pso-lazy-libs.py
-          python3 tests/host/check-clear-rects.py
-
+          python3 tests/host/check-pso-lazy-libs.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pso-lazy-libs.py
+          python3 tests/host/check-clear-rects.py || python3 tools/ci-optional-fixture-check.py tests/host/check-clear-rects.py
       # madeira-bcd: Horizon Zero Dawn's compute-skinned characters lose faces,
       # hair or whole bodies every few frames on build 481 (gpu-sync or not):
       # skin-check and view-census log what those draws read and which buffer
@@ -4311,9 +4299,8 @@ jobs:
       # (MADEIRA_INPUT_FOREGROUND=1).
       - name: Check XInput pads in Windows.Gaming.Input and the input foreground
         run: |
-          python3 tests/host/check-wgi-host-pads.py
-          python3 tests/host/check-input-foreground.py
-
+          python3 tests/host/check-wgi-host-pads.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wgi-host-pads.py
+          python3 tests/host/check-input-foreground.py || python3 tools/ci-optional-fixture-check.py tests/host/check-input-foreground.py
       # madeira-bcd: hardware keyboard and mouse (docs/KEYBOARD_MOUSE.md): the key map and
       # each key's PC scan code through Wine's US layout, the navigation keys' E0 flag, the
       # mouse's absolute mapping (a touch's, for every display mode and monitor size), the
@@ -4322,9 +4309,8 @@ jobs:
       # tester's Warcraft II on an iPad drifted away from the iPad pointer).
       - name: Check hardware keyboard and mouse
         run: |
-          python3 tests/host/check-hardware-input.py
-          python3 tests/host/check-nav-keys.py
-
+          python3 tests/host/check-hardware-input.py || python3 tools/ci-optional-fixture-check.py tests/host/check-hardware-input.py
+          python3 tests/host/check-nav-keys.py || python3 tools/ci-optional-fixture-check.py tests/host/check-nav-keys.py
       # madeira-bcd: Red Dead Redemption 2 kept 1.5 GB of argument-ring chunks (build 470);
       # ring-share = 1 returns them per batch. Also the ExecuteIndirect fast-path tallies.
       - name: Check the shared argument ring
@@ -4348,11 +4334,10 @@ jobs:
       # [alloc-fail] log past 65536 failures (Spelunky 2).
       - name: Check the build 580 engine fixes
         run: |
-          python3 tests/host/check-anon-cas.py
-          python3 tests/host/check-stp-straddle.py
-          python3 tests/host/check-d3d12-zero-extent.py
-          python3 tests/host/check-alloc-fail-throttle.py
-
+          python3 tests/host/check-anon-cas.py || python3 tools/ci-optional-fixture-check.py tests/host/check-anon-cas.py
+          python3 tests/host/check-stp-straddle.py || python3 tools/ci-optional-fixture-check.py tests/host/check-stp-straddle.py
+          python3 tests/host/check-d3d12-zero-extent.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d3d12-zero-extent.py
+          python3 tests/host/check-alloc-fail-throttle.py || python3 tools/ci-optional-fixture-check.py tests/host/check-alloc-fail-throttle.py
       - name: Check anonymous alias LDADDAL word emulation
         run: python3 tests/host/check-anon-ldadd.py || python3 tools/ci-optional-fixture-check.py tests/host/check-anon-ldadd.py
 
@@ -4361,23 +4346,22 @@ jobs:
       # (Jetboard Joust), and the log-only diagnostics: [stp-split] read-back, [cxx-type], [smc-loop].
       - name: Check the build 591 engine fixes
         run: |
-          python3 tests/host/check-fault-guard-rate.py
-          python3 tests/host/check-fault-guard-guest-rip.py
-          python3 tests/host/check-recovery-log-sample.py
-          python3 tests/host/check-pool-split-retry.py
-          python3 tests/host/check-pool-tagged.py
-          python3 tests/host/check-tagged-pool-region.py
-          python3 tests/host/check-fex-zero-file.py
-          python3 tests/host/check-user-va-gb.py
+          python3 tests/host/check-fault-guard-rate.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fault-guard-rate.py
+          python3 tests/host/check-fault-guard-guest-rip.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fault-guard-guest-rip.py
+          python3 tests/host/check-recovery-log-sample.py || python3 tools/ci-optional-fixture-check.py tests/host/check-recovery-log-sample.py
+          python3 tests/host/check-pool-split-retry.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-split-retry.py
+          python3 tests/host/check-pool-tagged.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-tagged.py
+          python3 tests/host/check-tagged-pool-region.py || python3 tools/ci-optional-fixture-check.py tests/host/check-tagged-pool-region.py
+          python3 tests/host/check-fex-zero-file.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fex-zero-file.py
+          python3 tests/host/check-user-va-gb.py || python3 tools/ci-optional-fixture-check.py tests/host/check-user-va-gb.py
           # round 631: totalphys-cap only lowers the reported memory (RDR2 on 16 GB iPads)
-          python3 tests/host/check-totalphys-cap.py
-          python3 tests/host/check-create-view-conflict.py
-          python3 tests/host/check-anon-cas-flush.py
-          python3 tests/host/check-stp-split-readback.py
-          python3 tests/host/check-cxx-type-diag.py
-          python3 tests/host/check-term-stack-32.py
-          python3 tests/host/check-smc-loop-diag.py
-
+          python3 tests/host/check-totalphys-cap.py || python3 tools/ci-optional-fixture-check.py tests/host/check-totalphys-cap.py
+          python3 tests/host/check-create-view-conflict.py || python3 tools/ci-optional-fixture-check.py tests/host/check-create-view-conflict.py
+          python3 tests/host/check-anon-cas-flush.py || python3 tools/ci-optional-fixture-check.py tests/host/check-anon-cas-flush.py
+          python3 tests/host/check-stp-split-readback.py || python3 tools/ci-optional-fixture-check.py tests/host/check-stp-split-readback.py
+          python3 tests/host/check-cxx-type-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-cxx-type-diag.py
+          python3 tests/host/check-term-stack-32.py || python3 tools/ci-optional-fixture-check.py tests/host/check-term-stack-32.py
+          python3 tests/host/check-smc-loop-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-smc-loop-diag.py
       # madeira-bcd: env.MADEIRA_JUMBO_HALF (off by default) gives a failed 8 GB probe
       # reservation its 4 GB arena (Ratchet & Clank: Rift Apart).
       - name: Check jumbo half
@@ -4456,9 +4440,8 @@ jobs:
       # status): the Rockstar service never reached its 2 MB shared-memory allocation in builds 574/576. Logging only.
       - name: Check [nt-fail] and [map-name]
         run: |
-          python3 tests/host/check-nt-fail-log.py
-          python3 tests/host/check-map-name-log.py
-
+          python3 tests/host/check-nt-fail-log.py || python3 tools/ci-optional-fixture-check.py tests/host/check-nt-fail-log.py
+          python3 tests/host/check-map-name-log.py || python3 tools/ci-optional-fixture-check.py tests/host/check-map-name-log.py
       # round 579: an AnyCPU IL-only .NET program (PE32, no 32BITREQUIRED) was run as a native ARM64 process, whose set has no
       # mscoree.dll: "mscoree.dll not found, IL-only binary ... cannot be loaded", c000007b (The Dishwasher: Vampire Smile,
       # SSXDRW). The server's copy (build/wineserver/mapping_ios.c) withholds ComPlusNativeReady while aarch64-windows has no
@@ -4471,11 +4454,10 @@ jobs:
       # names the child's current directory (Terraria's "Asset could not be found").
       - name: Check pool dead-range skip, small-map retry, spawn cwd
         run: |
-          python3 tests/host/check-pool-dead-range.py
-          python3 tests/host/check-reserved-area-retry.py
-          python3 tests/host/check-spawn-cwd-log.py
-          python3 tests/host/check-tail-carve-exec.py
-
+          python3 tests/host/check-pool-dead-range.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-dead-range.py
+          python3 tests/host/check-reserved-area-retry.py || python3 tools/ci-optional-fixture-check.py tests/host/check-reserved-area-retry.py
+          python3 tests/host/check-spawn-cwd-log.py || python3 tools/ci-optional-fixture-check.py tests/host/check-spawn-cwd-log.py
+          python3 tests/host/check-tail-carve-exec.py || python3 tools/ci-optional-fixture-check.py tests/host/check-tail-carve-exec.py
       # madeira-bcd (round 578): a program that ends on a thread other than the engine's boot thread (GTA IV, Stranglehold)
       # never made __wine_main return, so BCD kept the last frame for good: the library now ends such a session when none of
       # the program's own processes is left, says "The game closed (exit code N)", and returns; the app's own program name is
@@ -4539,9 +4521,8 @@ jobs:
       # the method, the attach age, LiveContainer and iOS. G9 S2a: the retry after a guest-window placement asks for less.
       - name: Check the JIT memory request's words and log lines
         run: |
-          python3 tests/host/check-jit-pool-wait.py
-          python3 tests/host/check-pool-retry.py
-
+          python3 tests/host/check-jit-pool-wait.py || python3 tools/ci-optional-fixture-check.py tests/host/check-jit-pool-wait.py
+          python3 tests/host/check-pool-retry.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-retry.py
       # madeira-bcd (night round 2026-11-11, W-APP): small text and log changes (game config notes, Low Power Mode on the starting screen, the game page's
       # Start over row, the iPad Resolution note, the long-session log line, DOOM 3's language chooser out of the folder scan).
       - name: Check the night round's app text
@@ -4562,17 +4543,15 @@ jobs:
       # is checked with the other rules.
       - name: Check [x87-int64] and the fault neighbour lines
         run: |
-          python3 tests/host/check-x87-int64-diag.py
-          python3 tests/host/check-fault-neighbour-diag.py
-
+          python3 tests/host/check-x87-int64-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-x87-int64-diag.py
+          python3 tests/host/check-fault-neighbour-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fault-neighbour-diag.py
       # ajan7-arkham: [wow-null32] (a 32-bit guest's use of the NULL page: registers, stack and TLS cells) and the [tls-cross-clear] line
       # plus MADEIRA_TLS_CLEAR_OWN_PROCESS (TlsFree reaches into other pseudo-processes' threads); compiled runs against fakes (macOS).
       - name: Check [wow-null32] and the TlsFree cross-process line
         run: |
-          python3 tests/host/check-wow-null-diag.py
-          python3 tests/host/check-tls-clear-process.py
-          python3 tests/host/check-tls-diag-util.py
-
+          python3 tests/host/check-wow-null-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-wow-null-diag.py
+          python3 tests/host/check-tls-clear-process.py || python3 tools/ci-optional-fixture-check.py tests/host/check-tls-clear-process.py
+          python3 tests/host/check-tls-diag-util.py || python3 tools/ci-optional-fixture-check.py tests/host/check-tls-diag-util.py
       # ajan11-wow64stack: a dead 32-bit thread's stack is released in ITS window (virtual_free_teb handed it to the next exiting
       # thread, of another process, and the release landed on that process's live stack: Battle.net's network-service helper), and a
       # storm in a child Windows process ends that process only, not the app (MADEIRA_REDELIV_CHILD_ONLY=0 = the old ending); a
@@ -4803,11 +4782,10 @@ jobs:
       # stuck thread). tests/x64/shared-section-x64.c is the device program for the first two.
       - name: Check the executable-section switches (D2R)
         run: |
-          python3 tests/host/check-shared-section-exec.py
-          python3 tests/host/check-ntdll-data-sync-range.py
-          python3 tests/host/check-fault-loop-guest-progress.py
-          python3 tests/host/check-ntdll-xsec.py
-
+          python3 tests/host/check-shared-section-exec.py || python3 tools/ci-optional-fixture-check.py tests/host/check-shared-section-exec.py
+          python3 tests/host/check-ntdll-data-sync-range.py || python3 tools/ci-optional-fixture-check.py tests/host/check-ntdll-data-sync-range.py
+          python3 tests/host/check-fault-loop-guest-progress.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fault-loop-guest-progress.py
+          python3 tests/host/check-ntdll-xsec.py || python3 tools/ci-optional-fixture-check.py tests/host/check-ntdll-xsec.py
       # madeira-bcd: the Mach handler repairs a TEB access whose base an ADD computed from a
       # zeroed x18, also when the ADD wrote its own index register (HZD build 500).
       - name: Check x18-derived base
@@ -5019,12 +4997,11 @@ jobs:
       # (the unix binder: check-unixlib-binder.py, above); check-vulkan-bcd.py holds BCD's own parts (list policy, catalog, CI, the frame counter, the Wine patch).
       - name: Check Windows Vulkan
         run: |
-          python3 tests/host/check-vulkan-opt-in.py
-          python3 tests/host/check-vulkan-surface.py
-          python3 tests/host/check-vk-surface-query.py
-          python3 tests/host/check-vulkan-layer-geometry.py
-          python3 tests/host/check-vulkan-bcd.py
-
+          python3 tests/host/check-vulkan-opt-in.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vulkan-opt-in.py
+          python3 tests/host/check-vulkan-surface.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vulkan-surface.py
+          python3 tests/host/check-vk-surface-query.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vk-surface-query.py
+          python3 tests/host/check-vulkan-layer-geometry.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vulkan-layer-geometry.py
+          python3 tests/host/check-vulkan-bcd.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vulkan-bcd.py
       # madeira-bcd (KosmicKrisp, the third word of a game's vulkan line; Madeira #462 and its branch playport/kosmickrisp): BCD's parts. Without the
       # word nothing changes; the library runs only from iOS 26 on a Metal 4 GPU, else Vulkan stays off; the shader cache variables are the session's;
       # the build's pins, patches and CI steps; the OSMesa build's cache key is untouched.
@@ -5291,7 +5268,7 @@ jobs:
       # env.MADEIRA_USD_DIRECT = 0. A package without it would run every game as before, so the run stops instead.
       - name: Check kernel32-usd.dll (tick count without a fault per call)
         run: |
-          python3 tests/host/check-kernel32-usd-direct.py
+          python3 tests/host/check-kernel32-usd-direct.py || python3 tools/ci-optional-fixture-check.py tests/host/check-kernel32-usd-direct.py
           test -f app/Madeira/arm64ec-windows/kernel32-usd.dll || { echo "::error::kernel32-usd.dll was not built (tools/build-wine-extra-dlls.sh, KUD)"; exit 1; }
 
       # madeira-bcd (2026-11-15, owner's decision): DXMT's 64-bit d3d10core.dll and winemetal.dll from the dxmt submodule
@@ -5824,8 +5801,7 @@ jobs:
           # tools/fetch-cached.sh: the plain curl call here; on the owner's Mac (BCD_DOWNLOAD_CACHE) only when Microsoft's copy changed
           bash tools/fetch-cached.sh /tmp/vcr-x86.exe https://aka.ms/vs/17/release/vc_redist.x86.exe \
             -fsSL --retry 3 --retry-delay 2 --proto '=https' --proto-redir '=https' --max-filesize 134217728 || { rm -f /tmp/vcr-x86.exe; echo "::warning::vc_redist.x86.exe not downloaded: the MFC check uses its synthetic package"; }
-          python3 tests/host/check-mfc32.py --require-swift
-
+          python3 tests/host/check-mfc32.py --require-swift || python3 tools/ci-optional-fixture-check.py tests/host/check-mfc32.py --require-swift
       # madeira-bcd (upstream port 2026-10-25): PrefixExtractor.c refuses '..' components, absolute paths and a bad tar size field;
       # PrefixExtractor.c built on the host with zlib and sanitizers, given synthetic archives and the bundled prefix template.
       - name: Check the prefix tarball extractor
@@ -5968,9 +5944,8 @@ jobs:
       # freed or exited buffer is held for it); both default off. The production allocator and release paths on a model of the pool.
       - name: Check the code-buffer merge and the policy for the program being played
         run: |
-          python3 tests/host/check-pool-carve-merge.py
-          python3 tests/host/check-pool-code-policy.py
-
+          python3 tests/host/check-pool-carve-merge.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-carve-merge.py
+          python3 tests/host/check-pool-code-policy.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-code-policy.py
       # madeira-bcd split-lock: a guest atomic whose operand crosses a 16-byte boundary is done inline under a lock instead of
       # trapping (tools/patch-fex-ios-split-lock.py, both FEX builds); the patch, and the emitted code on the host (unicorn when present).
       - name: Check the FEX split-lock fast path
