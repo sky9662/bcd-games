@@ -31,7 +31,9 @@ def check(what, cond, detail=""):
     ok = ok and bool(cond)
 
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 check("the workflow applies it after the trace patch, with this check first",
       "python3 tests/host/check-guest-log-redact.py\n          python3 tools/patch-wine-guest-log-redact.py wine/dlls/ntdll/unix/file.c" in wf
       and wf.index("tools/patch-wine-guest-log-trace.py wine/dlls") < wf.index("tools/patch-wine-guest-log-redact.py wine/dlls"))

@@ -37,7 +37,9 @@ spec = importlib.util.spec_from_file_location("d3dcdiag", root / "tools/patch-wi
 P = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(P)
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 step = wf.index("      - name: Patch wine d3dcompile with a failed-compile diagnostic\n")
 check("CI runs this check and applies the patch before the i386 farm is built",
       "python3 tests/host/check-wine-d3dcompile-diag.py\n          python3 tools/patch-wine-d3dcompile-diag.py wine\n" in wf[step:step + 500]

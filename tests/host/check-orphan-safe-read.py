@@ -36,7 +36,9 @@ def load(name):
     return m
 
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 check("CI applies it after the waiter reader and the orphan-lock patch, with this check first",
       "python3 tests/host/check-orphan-safe-read.py\n          python3 tools/patch-wine-orphan-safe-read.py wine/dlls/ntdll/unix/sync.c" in wf
       and wf.index("tools/patch-wine-waiter-read.py wine/dlls") < wf.index("tools/patch-wine-lock-orphan.py wine/dlls")

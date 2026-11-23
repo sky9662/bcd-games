@@ -38,7 +38,9 @@ spec = importlib.util.spec_from_file_location("dnsrefuse", root / "tools/patch-w
 P = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(P)
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 step = wf.index("      - name: Patch wine so the DNS wrapper refuses Valve's crash upload host (on by default)\n")
 check("CI runs this check and the patch after the DNS trace patch and before ntdll-unix is built",
       "python3 tests/host/check-wine-dns-refuse-crash.py\n          python3 tools/patch-wine-dns-refuse-crash.py wine/dlls/ws2_32/unixlib.c\n" in wf[step:step + 500]

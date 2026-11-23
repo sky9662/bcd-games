@@ -34,7 +34,9 @@ spec = importlib.util.spec_from_file_location("regtarget", root / "tools/patch-w
 P = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(P)
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 step = wf.index("      - name: Patch wine vkd3d-shader to honour register(ps, c0)\n")
 check("CI runs this check and applies the patch before the i386 farm is built",
       "python3 tests/host/check-vkd3d-register-target.py\n          python3 tools/patch-wine-vkd3d-register-target.py wine\n" in wf[step:step + 400]
