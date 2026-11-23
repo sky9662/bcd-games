@@ -35,7 +35,7 @@ from workflow_commands import workflow_commands
 
 wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 check("the workflow applies it after the trace patch, with this check first",
-      re.search(r"python3 tests/host/check-guest-log-redact\.py(?:\\s*\\|\\|\\s*python3 tools/ci-optional-fixture-check\.py tests/host/check-guest-log-redact\.py)?\\s+python3 tools/patch-wine-guest-log-redact\.py wine/dlls/ntdll/unix/file\.c", wf) is not None
+      re.search(r"python3 tests/host/check-guest-log-redact\.py(?:\s*\|\|\s*python3 tools/ci-optional-fixture-check\.py tests/host/check-guest-log-redact\.py)?\s+python3 tools/patch-wine-guest-log-redact\.py wine/dlls/ntdll/unix/file\.c", wf) is not None
       and wf.index("tools/patch-wine-guest-log-trace.py wine/dlls") < wf.index("tools/patch-wine-guest-log-redact.py wine/dlls"))
 
 candidates = [Path(os.environ["WINE_SRC"]) if os.environ.get("WINE_SRC") else None, root / "wine", Path.home() / "madeira-bcd/wine"]
