@@ -2,27 +2,25 @@
 # under GPL-3.0-or-later and modified for BCD in November 2026. See THIRD-PARTY-NOTICES.md.
 # Portions copyright 2026 Russell Barton: code taken from https://github.com/thebcd69/bcd-games (pull request #46 by rbarton124)
 # under GPL-3.0-or-later with the Madeira Converter Exception and modified for BCD in November 2026. See THIRD-PARTY-NOTICES.md.
-name: Build Madeira IPA (unsigned)
+name: Build BCD 0.1.712 Turing + Touch IPA (unsigned)
 
 on:
   workflow_dispatch:
-  # Paused while builds run on the owner's Mac (2026-10-13). To build on push
-  # to main again, uncomment the three lines below.
-  # push:
-  #   branches: [main]
-  #   paths: [".github/workflows/build-ipa.yml"]
+  push:
+    branches: [feature/bcd-0712-turing-touch-ipa]
+    paths: [".github/workflows/build-ipa.yml"]
 
 # A push and a manual dispatch seconds apart used to start two parallel
 # multi-hour macOS jobs on the same commit.
 concurrency:
-  group: build-ipa
-  cancel-in-progress: true
+  group: bcd-0712-turing-touch-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
     # madeira-bcd: runs only in the owner's repository; a fork's run is skipped.
-    if: github.repository == 'thebcd69/madeira-bcd'
-    runs-on: macos-15
+    if: github.repository == 'sky9662/bcd-games'
+    runs-on: xcode-27
     # contents: write only so the token can see DRAFT releases, which is where
     # the Metal Shader Converter installer is kept (drafts are not public).
     # Nothing in this job creates, edits or pushes anything.
@@ -33,7 +31,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: false
+
+      # Public fork builds: keep the official 0.1.712 FEX/wine/dxmt pins.
+      # The historical Dock pin could not be fetched on the previous successful builds.
+      - name: Restore public submodules with Dock compatibility fallback
+        shell: bash
+        run: |
+          git submodule update --init --recursive -- FEX wine dxmt
+          if ! git submodule update --init --recursive -- madeira-dock; then
+            rm -rf madeira-dock
+            git clone --depth 1 https://github.com/thebcd69/bcd-dock.git madeira-dock
+          fi
+          git -C madeira-dock rev-parse HEAD
 
       # ContentView.swift uses glassEffect(.regular, in:), which needs the
       # iOS 26 SDK. The runner defaults to Xcode 16.4 (iOS 18.5), so pick the
@@ -2948,10 +2958,31 @@ jobs:
           path: FEX/build-arm64ec
           key: fex-arm64ec-${{ steps.fexrev.outputs.sha }}-v2
 
-      - name: Build xtajit64.dll (FEX fixes, AVX opt-in)
-        if: env.MINGW_OK == '1'
-        continue-on-error: true
+      # Mandatory for this test IPA. Never package the committed, unpatched
+      # xtajit64.dll if cross compilation failed or was skipped.
+      - name: Require ARM64EC toolchain for Turing FEX
+        run: |
+          if [ "${MINGW_OK:-}" != "1" ]; then
+            echo "::error::ARM64EC toolchain unavailable; refusing unpatched IPA"
+            exit 1
+          fi
+
+      - name: Build xtajit64.dll (Turing mapped-exec recheck)
         run: bash tools/build-xtajit64.sh
+
+      - name: Verify Turing FEX patch is present in shipped DLL
+        run: |
+          for dll in app/Madeira/arm64ec-windows/xtajit64.dll app/Madeira/arm64ec-windows/xtajit64-avx.dll; do
+            if [ ! -s "$dll" ]; then
+              echo "::error::Missing built FEX module: $dll"
+              exit 1
+            fi
+            if ! LC_ALL=C grep -aFq '[tc-exec-recheck]' "$dll"; then
+              echo "::error::Unpatched FEX module: $dll"
+              exit 1
+            fi
+            echo "::notice::verified Turing FEX marker in $dll"
+          done
 
       - name: Save FEX ARM64EC build
         if: steps.fexeccache.outputs.cache-hit != 'true' && hashFiles('FEX/build-arm64ec/Bin/libarm64ecfex.dll') != ''
@@ -6221,38 +6252,17 @@ jobs:
       - name: Package Madeira and Madeira2 unsigned IPAs
         run: python3 tools/ota-variants.py package build-out/Madeira.xcarchive/Products/Applications/Madeira.app build-out ${{ steps.bn.outputs.n }}
 
-      # Over-the-air install: sign with the owner's certificate (kept in the
-      # owner's PRIVATE bucket, never in the repository) and put both signed IPAs
-      # plus installation pages (7-day pre-signed links) in the same bucket.
-      # A signing/upload failure is caught by the private-bucket gate below.
-      - name: Sign for OTA install (private bucket)
-        id: ota
-        continue-on-error: true
-        env:
-          B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
-          B2_APP_KEY: ${{ secrets.B2_APP_KEY }}
-          B2_S3_ENDPOINT: ${{ secrets.B2_S3_ENDPOINT }}
-          B2_SIGN_BUCKET: ${{ secrets.B2_SIGN_BUCKET }}
-          SIGN_P12_PASSWORD: ${{ secrets.SIGN_P12_PASSWORD }}
-          OTA_MAIL_USER: ${{ secrets.OTA_MAIL_USER }}
-          OTA_MAIL_APP_PASSWORD: ${{ secrets.OTA_MAIL_APP_PASSWORD }}
-          OTA_MAIL_TO: ${{ secrets.OTA_MAIL_TO }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-        run: bash tools/sign-and-publish-ota.sh build-out/Madeira-0.1.${{ steps.bn.outputs.n }}-unsigned.ipa ${{ steps.bn.outputs.n }} build-out/Madeira2-0.1.${{ steps.bn.outputs.n }}-unsigned.ipa
-
-      # Owner's decision (2026-10-02): no IPA artifact on GitHub at all. The
-      # repository and its Actions are public, so an artifact is downloadable by
-      # anyone; the only copy of a build is the signed IPA in the owner's
-      # private R2 bucket (the OTA step above). If that step did not succeed,
-      # the build fails here instead of keeping the IPA somewhere public.
-      - name: Check the IPA reached the private bucket
-        if: steps.ota.outcome != 'success'
-        run: |
-          echo "::error::OTA signing/upload did not succeed: this build's IPA was not kept anywhere (no GitHub artifact by design)"
-          exit 1
+      # User's sideload test: preserve original BCD Bundle ID.
+      # No upstream signing certificate, OTA secrets or bucket access.
+      - name: Upload unsigned BCD 0.1.712 test IPAs
+        uses: actions/upload-artifact@v4
+        with:
+          name: bcd-0712-turing-touch-unsigned-ipa
+          path: |
+            build-out/Madeira-*-unsigned.ipa
+            build-out/Madeira2-*-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14
 
       # Full logs as an artifact -- the annotations above are truncated, and
       # digging them out of the raw job log is painful.
