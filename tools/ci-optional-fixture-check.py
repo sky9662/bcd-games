@@ -17,6 +17,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OPTIONAL_TOOLS = {"tools/log-facts.py", "tools/pull-logs.py", "tools/cluster-logs.py"}
+# Official 0.1.712 tracks the KosmicKrisp interpolation host check but does
+# not ship this Playport patch-series README. Only the documentation fixture
+# is optional: the test's real C/Objective-C/Metal assertions stay strict.
+OPTIONAL_MISSING_DOCS = {"build/mesa-ios/playport-patches/README.md"}
 MISSING = re.compile(
     r"FileNotFoundError: \[Errno 2\] No such file or directory: ['\"]([^'\"]+)['\"]"
 )
@@ -65,6 +69,7 @@ def main() -> int:
             (rel.startswith("docs/") and rel.endswith(".md"))
             or rel.startswith("bcd-logs/")
             or rel in OPTIONAL_TOOLS
+            or rel in OPTIONAL_MISSING_DOCS
         )
         if not is_optional or path.exists():
             continue
