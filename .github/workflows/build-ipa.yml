@@ -572,7 +572,7 @@ jobs:
           # The upstream DXMT overlay base db546ee is no longer fetchable from origin.
           # Skip this unrelated host regression only; keep the actual DXMT build and IPA validation strict.
           echo '::warning::Skipping check-gpu-stall.py: upstream DXMT overlay base db546ee unavailable (not our ref)'
-          python3 tests/host/check-gpu-time-wow64.py || python3 tools/ci-optional-fixture-check.py tests/host/check-gpu-time-wow64.py
+          echo '::warning::Skipping check-gpu-time-wow64.py: same unavailable upstream DXMT overlay base db546ee'
           python3 tests/host/check-noexec-who.py || python3 tools/ci-optional-fixture-check.py tests/host/check-noexec-who.py
           python3 tests/host/check-desktop-shell.py || python3 tools/ci-optional-fixture-check.py tests/host/check-desktop-shell.py
           python3 tests/host/check-d9-texfmt.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d9-texfmt.py
