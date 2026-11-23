@@ -7,6 +7,8 @@ build/DLL checks. Dynamic or conditional reads require human review.
 import argparse
 import ast
 import re
+import runpy
+import subprocess
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -55,6 +57,11 @@ def scan(root):
     text = workflow.read_text(encoding='utf-8')
     scripts = sorted(set(SCRIPT.findall(text)))
     results = []
+    # Share the exact safe exceptions with the fallback used by individual
+    # host checks. Never approve a missing tracked file.
+    guard = runpy.run_path(str(root / "tools/ci-optional-fixture-check.py"),
+                           run_name="ci_preflight_guard")
+    approved = guard["OPTIONAL_TOOLS"] | guard["OPTIONAL_MISSING_DOCS"]
     for name in scripts:
         source = root / name
         if not source.is_file():
@@ -98,7 +105,21 @@ def scan(root):
                             and not relative.startswith('app/Madeira/gl/'))
                         or relative.startswith('build/mesa-ios/playport-patches/')
                     )
-                    severity = 'FATAL' if direct and checked_in else 'REVIEW'
+                    optional = (
+                        (relative.startswith('docs/') and relative.endswith('.md'))
+                        or relative.startswith('bcd-logs/')
+                        or relative in approved
+                    )
+                    if optional:
+                        # A tracked fixture that vanished from checkout is NOT
+                        # optional. This protects against accidentally masking
+                        # missing source files or a broken sparse checkout.
+                        tracked = subprocess.run(
+                            ['git', 'ls-files', '--error-unmatch', '--', relative],
+                            cwd=root, capture_output=True).returncode == 0
+                        optional = not tracked
+                    severity = ('OPTIONAL' if optional else
+                                'FATAL' if direct and checked_in else 'REVIEW')
                     results.append((severity, name, line, f'missing literal read: {relative}'))
     return len(scripts), results
 
@@ -115,8 +136,10 @@ def main():
     if len(issues) > 120:
         print(f'... {len(issues) - 120} further findings')
     fatals = [issue for issue in issues if issue[0] == 'FATAL']
+    optionals = [issue for issue in issues if issue[0] == 'OPTIONAL']
     print(f'preflight: {len(fatals)} definite missing/script issues; '
-          f'{len(issues)-len(fatals)} conditional reads to review')
+          f'{len(optionals)} absent optional upstream fixtures; '
+          f'{len(issues)-len(fatals)-len(optionals)} conditional or generated reads to review')
     return 1 if fatals and args.strict else 0
 
 
