@@ -31,7 +31,10 @@ jobs:
       # Run a cheap static checkout-dependency audit BEFORE requesting an
       # expensive macOS build runner. Missing untracked upstream documents
       # and accidental missing host scripts must be found early, not hours in.
-      - name: Preflight all host-test Python file inputs
+      - name: Preflight tracked test inputs and report upstream fixture omissions
+        # Inspect the complete host-test suite before using a macOS runner.
+        # Tracked inputs are fatal when missing; missing *untracked* upstream
+        # documentation is reported explicitly, never treated as a passing test.
         run: python3 tools/ci-preflight-host-fixtures.py --strict
 
       - name: Verify 4 KiB host pages and run guest-instruction regression
