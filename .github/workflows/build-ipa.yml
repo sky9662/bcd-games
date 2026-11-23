@@ -1872,6 +1872,8 @@ jobs:
       # madeira-bcd (round 630, agent R): a launcher's own log names the player's accounts (Rockstar's launcher.log: "Steam user:",
       # "Saved profile for", "Signed in online to profile:", "Gamer:"); the mirror keeps such a line up to that word and drops the
       # name, so an uploaded log never holds it. Logging only.
+      # The host regression accepts the documented optional-fixture fallback
+      # without weakening its assertion that redaction runs before patching.
       - name: Patch wine text-log mirror to drop account names
         run: |
           python3 tests/host/check-guest-log-redact.py || python3 tools/ci-optional-fixture-check.py tests/host/check-guest-log-redact.py
