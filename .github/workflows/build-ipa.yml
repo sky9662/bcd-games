@@ -124,7 +124,19 @@ jobs:
       # The fallback only waives a host regression test if a rerun proves an
       # absent, untracked optional fixture. Compiler and DLL checks stay fatal.
       - name: Validate strict host-fixture fallback and DXMT baseline guard
-        run: python3 -m py_compile tools/ci-optional-fixture-check.py
+        run: |
+          python3 -m py_compile tools/ci-optional-fixture-check.py
+          # The upstream KosmicKrisp test refers to a Playport README missing
+          # from the official 0.1.712 tree. Assert our CI-only guard recognizes
+          # that *specific* missing document; runtime/code checks remain strict.
+          python3 - <<'PY'
+          import runpy
+          from pathlib import Path
+          guard = runpy.run_path("tools/ci-optional-fixture-check.py", run_name="ci_optional_guard")
+          missing = "build/mesa-ios/playport-patches/README.md"
+          assert missing in guard["OPTIONAL_MISSING_DOCS"], "missing upstream Playport docs guard"
+          print("::notice::Playport patch README:", "present" if Path(missing).is_file() else "absent (host documentation fixture only)")
+          PY
 
       - name: Check generated settings catalog
         run: python3 tests/host/check-config-catalog.py || python3 tools/ci-optional-fixture-check.py tests/host/check-config-catalog.py
