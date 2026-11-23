@@ -40,8 +40,21 @@ jobs:
           fi
           python3 tests/host/check-guest-instruction.py
 
+  swap-diag-linux:
+    # Run the timing-sensitive pthread condition-variable harness on Linux.
+    # macOS runner scheduling made its 50 ms scaled waits nondeterministic.
+    if: github.repository == 'sky9662/bcd-games'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      - name: Check swap diagnostics with ASan and host regressions
+        run: python3 tests/host/check-swap-diag.py
+
   build:
-    needs: [guest-instruction-linux]
+    needs: [guest-instruction-linux, swap-diag-linux]
     # madeira-bcd: runs only in the owner's repository; a fork's run is skipped.
     if: github.repository == 'sky9662/bcd-games'
     runs-on: xcode-27
@@ -868,7 +881,8 @@ jobs:
 
       # swapchain mode-switch diagnostics ([swap-diag], [swap-win], [main-stall]) only log.
       - name: Check swap diag
-        run: python3 tests/host/check-swap-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-swap-diag.py
+        # Full host regression is a required upstream Linux job.
+        run: echo "::notice::swap diagnostics validated in swap-diag-linux"
 
       # a thread that cannot be created says why (Chromium OOM exit with size 0)
       - name: Check thread create failure
