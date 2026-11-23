@@ -76,7 +76,7 @@ def scan(root):
                         pathval = source_path(expr, known) if expr else None
                         if pathval is not None:
                             known[target.id] = pathval
-                        elif target.id in known and 'Path(__file__)' not in ast.unparse(expr):
+                        elif expr is not None and target.id in known and 'Path(__file__)' not in ast.unparse(expr):
                             known.pop(target.id, None)
         seen = set()
         for stmt in tree.body:
@@ -89,8 +89,17 @@ def scan(root):
                 key = (name, line, str(target))
                 if key not in seen:
                     seen.add(key)
-                    results.append(('FATAL' if direct else 'REVIEW', name, line,
-                                    f'missing literal read: {target.relative_to(root)}'))
+                    relative = target.relative_to(root).as_posix()
+                    # Generated outputs and submodule contents may be absent
+                    # before macOS build steps; report them without a false fail.
+                    checked_in = (
+                        relative.startswith(('docs/', 'tests/', 'tools/', '.github/'))
+                        or (relative.startswith('app/Madeira/')
+                            and not relative.startswith('app/Madeira/gl/'))
+                        or relative.startswith('build/mesa-ios/playport-patches/')
+                    )
+                    severity = 'FATAL' if direct and checked_in else 'REVIEW'
+                    results.append((severity, name, line, f'missing literal read: {relative}'))
     return len(scripts), results
 
 
