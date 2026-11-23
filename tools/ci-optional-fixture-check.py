@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OPTIONAL_TOOLS = {"tools/log-facts.py", "tools/pull-logs.py"}
+OPTIONAL_TOOLS = {"tools/log-facts.py", "tools/pull-logs.py", "tools/cluster-logs.py"}
 MISSING = re.compile(
     r"FileNotFoundError: \[Errno 2\] No such file or directory: ['\"]([^'\"]+)['\"]"
 )
