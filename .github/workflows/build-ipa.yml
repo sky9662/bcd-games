@@ -86,7 +86,7 @@ jobs:
       # The upstream checkout omits some docs and fork-only log-intake fixtures.
       # The fallback only waives a host regression test if a rerun proves an
       # absent, untracked optional fixture. Compiler and DLL checks stay fatal.
-      - name: Validate strict host-fixture fallback
+      - name: Validate strict host-fixture fallback and DXMT baseline guard
         run: python3 -m py_compile tools/ci-optional-fixture-check.py
 
       - name: Check generated settings catalog
