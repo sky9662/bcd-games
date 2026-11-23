@@ -20,7 +20,16 @@ OPTIONAL_TOOLS = {"tools/log-facts.py", "tools/pull-logs.py", "tools/cluster-log
 # Official 0.1.712 tracks the KosmicKrisp interpolation host check but does
 # not ship this Playport patch-series README. Only the documentation fixture
 # is optional: the test's real C/Objective-C/Metal assertions stay strict.
-OPTIONAL_MISSING_DOCS = {"build/mesa-ios/playport-patches/README.md"}
+OPTIONAL_MISSING_DOCS = {
+    # These documentation paths are referenced by official BCD 0.1.712 host
+    # checks but absent/untracked in its public repository. Never waive source
+    # code, compiler outputs, or bundled DLLs through this list.
+    "build/mesa-ios/playport-patches/README.md",
+    "app/Madeira/vulkan/README.md",
+    "app/Madeira/gl/README.md",
+    "tools/fetch-vcruntime.md",
+    "README-BCD.md",
+}
 MISSING = re.compile(
     r"FileNotFoundError: \[Errno 2\] No such file or directory: ['\"]([^'\"]+)['\"]"
 )
