@@ -1281,6 +1281,7 @@ jobs:
       - name: Check turbo and macros
         run: python3 tests/host/check-bcd-turbo.py --require-swift || python3 tools/ci-optional-fixture-check.py tests/host/check-bcd-turbo.py --require-swift
 
+      # Fork CI: the host players harness includes BCDTouchAcceleration.swift so the real touch source typechecks.
       # Players (round 604): press a button on a controller to make it Player 1 to 4, rumble for each player, the touch controls as a player; with
       # nothing chosen a controller takes the first free slot as before.
       - name: Check players
