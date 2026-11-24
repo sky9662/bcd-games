@@ -2,18 +2,18 @@
 # under GPL-3.0-or-later and modified for BCD in November 2026. See THIRD-PARTY-NOTICES.md.
 # Portions copyright 2026 Russell Barton: code taken from https://github.com/thebcd69/bcd-games (pull request #46 by rbarton124)
 # under GPL-3.0-or-later with the Madeira Converter Exception and modified for BCD in November 2026. See THIRD-PARTY-NOTICES.md.
-name: Build BCD 0.1.712 Turing + Touch IPA (unsigned)
+name: Build BCD 0.1.712 Turing + Touch + Upstream Cloud IPA (unsigned)
 
 on:
   workflow_dispatch:
   push:
-    branches: [feature/bcd-0712-turing-touch-ipa]
+    branches: [feature/bcd-0712-upstream-cloud-ipa]
     paths: [".github/workflows/build-ipa.yml"]
 
 # A push and a manual dispatch seconds apart used to start two parallel
 # multi-hour macOS jobs on the same commit.
 concurrency:
-  group: bcd-0712-turing-touch-${{ github.ref }}
+  group: bcd-0712-upstream-cloud-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -5919,6 +5919,9 @@ jobs:
       - name: Check Steam Cloud
         run: python3 tests/host/check-steam-cloud.py || python3 tools/ci-optional-fixture-check.py tests/host/check-steam-cloud.py
 
+      - name: Check upstream Windows profile unification (temporary files only)
+        run: python3 tests/host/check-profile-unification.py
+
       # madeira-bcd (upstream port 2026-10-25): SteamRemoteCache, which rewrites the list Valve's client answers Steam Cloud API saves
       # from, compiled on the host over temporary prefixes; off in BCD unless env.MADEIRA_STEAM_CLOUD_REMOTECACHE is set.
       - name: Check Valve's client's remotecache.vdf
@@ -6328,7 +6331,7 @@ jobs:
       - name: Upload unsigned BCD 0.1.712 test IPAs
         uses: actions/upload-artifact@v4
         with:
-          name: bcd-0712-turing-touch-unsigned-ipa
+          name: bcd-0712-upstream-cloud-unsigned-ipa
           path: |
             build-out/Madeira-*-unsigned.ipa
             build-out/Madeira2-*-unsigned.ipa
