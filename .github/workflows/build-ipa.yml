@@ -34,6 +34,9 @@ jobs:
       - name: Check strict workflow command normalization
         run: python3 tests/host/check-workflow-commands.py
 
+      - name: Check unsigned IPA publication contract before macOS
+        run: python3 tests/host/check-ipa-workflow-contract.py
+
       - name: Preflight tracked test inputs and report upstream fixture omissions
         # Inspect the complete host-test suite before using a macOS runner.
         # Tracked inputs are fatal when missing; missing *untracked* upstream
@@ -2079,7 +2082,7 @@ jobs:
         run: python3 tests/host/check-storage-device.py || python3 tools/ci-optional-fixture-check.py tests/host/check-storage-device.py
 
       - name: Check paired IPA and OTA publication contracts
-        run: python3 tests/host/check-ota-variants.py || python3 tools/ci-optional-fixture-check.py tests/host/check-ota-variants.py
+        run: python3 tests/host/check-ota-variants.py --unsigned-workflow || python3 tools/ci-optional-fixture-check.py tests/host/check-ota-variants.py --unsigned-workflow
 
       - name: Check the app's iOS 18 minimum
         run: python3 tests/host/check-ios-minimum.py || python3 tools/ci-optional-fixture-check.py tests/host/check-ios-minimum.py
