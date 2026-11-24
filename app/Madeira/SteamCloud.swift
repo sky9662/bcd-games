@@ -266,7 +266,7 @@ struct SteamCloudPaths: Sendable {
 /// it must not be running).
 ///
 /// A file present in both folders keeps the newer copy; the other is copied to
-/// Files › Madeira › Profile Merge Backups. After such a collision the Steam
+/// Files › BCD › Profile Merge Backups. After such a collision the Steam
 /// Cloud record is dropped, so a save that now differs from the cloud is shown
 /// as a choice instead of being uploaded or downloaded unasked.
 enum ProfileUnification {
@@ -321,7 +321,7 @@ enum ProfileUnification {
         }
         LogStore.shared.log("[profile] one Windows profile: \(rewritten) registry path(s) now name the unix user's folder; "
             + "\(moved) item(s) copied from the template profile, \(collisions) collision(s) kept newer"
-            + (collisions > 0 ? " (older copies in Files › Madeira › Profile Merge Backups; Steam Cloud record reset)" : ""),
+            + (collisions > 0 ? " (older copies in Files › BCD › Profile Merge Backups; Steam Cloud record reset)" : ""),
             level: .success)
     }
 

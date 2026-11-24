@@ -6,6 +6,11 @@ from pathlib import Path
 import subprocess
 import tempfile
 root=Path(__file__).resolve().parents[2]
+app=(root/'app/Madeira/MadeiraApp.swift').read_text()
+# On a fresh install system.reg does not exist until the template is seeded.
+# The one-shot migration must see it before any view or background work starts.
+assert app.index('madeira_seed_prefix_if_needed(MadeiraDock.prefix.path)') < app.index('ProfileUnification.run()') < app.index('BackgroundRun.shared.start()')
+assert app.index('ProfileUnification.run()') < app.index('var body: some Scene')
 s=(root/'app/Madeira/SteamCloud.swift').read_text()
 profile=s[s.index('enum ProfileUnification {'):s.index('// MARK: - Comparison')]
 assert profile.index('try merge(') < profile.index('rewrite(url, from: old, to: user)')

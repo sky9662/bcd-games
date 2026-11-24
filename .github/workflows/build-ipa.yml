@@ -129,6 +129,11 @@ jobs:
           xcrun --sdk iphoneos --show-sdk-version
           clang --version
 
+      # Check the new migration before expensive host regressions and builds.
+      # Also guard fresh-install seeding before the one-shot startup migration.
+      - name: Check upstream Windows profile unification (temporary files only)
+        run: python3 tests/host/check-profile-unification.py
+
       # The upstream checkout omits some docs and fork-only log-intake fixtures.
       # The fallback only waives a host regression test if a rerun proves an
       # absent, untracked optional fixture. Compiler and DLL checks stay fatal.
@@ -5919,9 +5924,6 @@ jobs:
       - name: Check Steam Cloud
         run: python3 tests/host/check-steam-cloud.py || python3 tools/ci-optional-fixture-check.py tests/host/check-steam-cloud.py
 
-      - name: Check upstream Windows profile unification (temporary files only)
-        run: python3 tests/host/check-profile-unification.py
-
       # madeira-bcd (upstream port 2026-10-25): SteamRemoteCache, which rewrites the list Valve's client answers Steam Cloud API saves
       # from, compiled on the host over temporary prefixes; off in BCD unless env.MADEIRA_STEAM_CLOUD_REMOTECACHE is set.
       - name: Check Valve's client's remotecache.vdf
@@ -6325,6 +6327,9 @@ jobs:
 
       - name: Package Madeira and Madeira2 unsigned IPAs
         run: python3 tools/ota-variants.py package build-out/Madeira.xcarchive/Products/Applications/Madeira.app build-out ${{ steps.bn.outputs.n }}
+
+      - name: Verify upstream Cloud IPA identities and preserved feature markers
+        run: python3 tools/verify-upstream-cloud-ipa.py
 
       # User's sideload test: preserve original BCD Bundle ID.
       # No upstream signing certificate, OTA secrets or bucket access.
