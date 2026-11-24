@@ -38,6 +38,8 @@ struct MadeiraApp: App {
         // madeira-bcd (from Madeira #498): games and downloads keep going when BCD leaves the screen, if Settings >
         // Memory & performance > In the background says so (BackgroundRun.swift). Off: it only halts the audio
         // endpoint when BCD enters the background, which the "audio" background mode would otherwise keep alive.
+        // Use one Windows profile before Wine or Steam Cloud reads the prefix (Madeira v0.2.0).
+        ProfileUnification.run()
         BackgroundRun.shared.start()
         LibraryController.duoNavigation = BCDDuoFeatures.active   // the native Duo interface's direction repeat; false everywhere else
     }
