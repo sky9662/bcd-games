@@ -103,7 +103,9 @@ check("the SPIRV-Cross patch is a mailbox patch of spirv_msl.cpp / spirv_msl.hpp
       and re.findall(r"^diff --git a/(\S+) b/", ps, re.M) == ["spirv_msl.cpp", "spirv_msl.hpp"] and "bool instance_relative_patch_id = false;" in ps)
 
 # ===================================================================================================================== 2. CI
-ci = (R / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+ci = workflow_commands((R / ".github/workflows/build-ipa.yml").read_text())
 key_plain = "key: opengl-libs-v1-${{ hashFiles('build/mesa-ios/build.sh', 'build/mesa-ios/ios-arm64.cross', 'build/mesa-ios/patches/*.patch', 'build/moltenvk-ios/build.sh') }}\n"
 check("CI: the plain OpenGL library set keeps its cache key (restore and save), so that the patched build never rebuilds Mesa or MoltenVK",
       ci.count(key_plain) == 2 and "run: bash build/moltenvk-ios/build.sh\n" in ci)

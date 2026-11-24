@@ -210,7 +210,9 @@ cat = (root / "app/Madeira/ConfigCatalog.generated.swift").read_text()
 for key, dflt in (("clear-defer", "1"), ("rp-carry", "0"), ("rp-discard", "0"), ("f6-rar", "0")):
     check(f"catalog lists {key}, default {dflt}",
           re.search(r'key: "%s".*kind: \.bool, defaultValue: "%s"' % (re.escape(key), dflt), cat) is not None)
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 check("CI runs this check", "- name: Check render-pass traffic\n        run: python3 tests/host/check-render-pass-traffic.py" in wf)
 
 # ---- the code, run ------------------------------------------------------------

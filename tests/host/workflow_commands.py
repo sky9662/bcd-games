@@ -16,6 +16,8 @@ def workflow_commands(text):
             " || python3 tools/ci-optional-fixture-check.py "
         )
         command = before.lstrip()
+        # Single-line YAML run entries carry the same strict fallback.
+        command = command.removeprefix("run: ")
         if (
             separator
             and command.startswith("python3 tests/host/")

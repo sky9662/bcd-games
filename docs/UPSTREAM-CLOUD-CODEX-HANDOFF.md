@@ -14,6 +14,8 @@ Ported ProfileList parsing, profile-first path resolution, ProfileUnification an
 Observed on device: Turing Complete writes users/mythic; Cloud's same=28 matched users/mobile instead, with counting_signals present only in mobile and cloud. Migration copies old profile into Unix-named profile, keeps original and backs up collisions, resets the Cloud baseline. Per-file modification time is not necessarily a coherent save-set version; back up BOTH user profiles before testing, inspect conflict prompts and verify game progress; don't automatically resolve real cloud conflicts. Do not access or alter device saves.
 
 ## Build ownership: Windows Codex
+Before building this or a future version, read [the recorded CI lessons](local-build/CI-LESSONS.md): verified earlier IPA baseline, whole-suite workflow-assertion fixes, component-specific LLVM selection, cache reuse and non-duplicate dispatch checks. The user explicitly requested that these lessons persist across version upgrades.
+
 Use the existing authenticated local git/gh session. Fetch the work branch, check its latest SHA and existing runs before starting a new run. The branch-specific workflow push may already have queued a run. Avoid duplicate runs; no cancellation of other builds. 
 ```powershell
 gh run list --repo sky9662/bcd-games --branch feature/bcd-0712-upstream-cloud-ipa --limit 10

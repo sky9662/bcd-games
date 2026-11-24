@@ -31,6 +31,9 @@ jobs:
       # Run a cheap static checkout-dependency audit BEFORE requesting an
       # expensive macOS build runner. Missing untracked upstream documents
       # and accidental missing host scripts must be found early, not hours in.
+      - name: Check strict workflow command normalization
+        run: python3 tests/host/check-workflow-commands.py
+
       - name: Preflight tracked test inputs and report upstream fixture omissions
         # Inspect the complete host-test suite before using a macOS runner.
         # Tracked inputs are fatal when missing; missing *untracked* upstream
@@ -1748,6 +1751,13 @@ jobs:
             app/Madeira/gl/libvulkan_kosmickrisp.version
             app/Madeira/licenses/KosmicKrisp-Mesa-license.rst
           key: kosmickrisp-v1-${{ hashFiles('build/mesa-ios/build-kosmickrisp-bcd.sh', 'build/mesa-ios/build-kosmickrisp.sh', 'build/mesa-ios/build-playport-kosmickrisp.sh', 'build/mesa-ios/fetch-playport.py', 'build/mesa-ios/kk-stale-source.sh', 'build/mesa-ios/kosmickrisp-ios-arm64.cross', 'build/mesa-ios/kosmickrisp-patches/*.patch', 'build/mesa-ios/playport-patches/*.patch') }}
+
+      # The pinned SPIRV translator supports LLVM 22; unversioned Homebrew llvm is now 23.
+      - name: Select supported LLVM for KosmicKrisp
+        if: steps.kkcache.outputs.cache-hit != 'true'
+        run: |
+          brew install llvm@22
+          echo "KK_LLVM_CONFIG=$(brew --prefix llvm@22)/bin/llvm-config" >> "$GITHUB_ENV"
 
       - name: Build KosmicKrisp for iOS
         id: kkbuild

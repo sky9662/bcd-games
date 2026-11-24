@@ -568,7 +568,9 @@ catalog = (root / 'app/Madeira/ConfigCatalog.generated.swift').read_text()
 check('the config catalog (generator and generated Swift) has the entry, default off, with its sources',
       '"env.MADEIRA_INT3_X86_DUMP"' in gen_cat and '"sources": ["build/ntdll-unix/ios_int3_x86_diag.h", "build/ntdll-unix/signal_arm64_ios.c"]' in gen_cat
       and 'ConfigOption(key: "env.MADEIRA_INT3_X86_DUMP", title: "Report a 32-bit program\'s int3 in full", kind: .bool, defaultValue: "0"' in catalog)
-ci = (root / '.github/workflows/build-ipa.yml').read_text()
+from workflow_commands import workflow_commands
+
+ci = workflow_commands((root / '.github/workflows/build-ipa.yml').read_text())
 check('build-ipa.yml runs this check', 'python3 tests/host/check-int3-x86-diag.py' in ci and ci.count('check-int3-x86-diag.py') == 1)
 
 wine = Path(os.environ.get('WINE_SRC', root / 'wine'))
