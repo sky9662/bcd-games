@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify every pinned third-party manifest entry before allocating macOS.
+"""Verify every pinned source manifest entry before allocating macOS.
 
 Use --index locally after git add to check the exact Git blobs without Windows
 checkout newline conversion. CI checks the actual checkout bytes by default.
@@ -45,8 +45,8 @@ def read_files(paths):
 
 
 tracked = subprocess.check_output(["git", "-C", str(ROOT), "ls-files", "-z"]).decode().split("\0")
-manifests = sorted(p for p in tracked if p.startswith("third-party/") and p.endswith("/SHA256SUMS"))
-assert manifests, "No tracked third-party source manifests found"
+manifests = sorted(p for p in tracked if p.endswith("/SHA256SUMS"))
+assert manifests, "No tracked source manifests found"
 expected = {}
 for manifest, data in read_files(manifests).items():
     assert data is not None, f"Missing tracked manifest: {manifest}"
@@ -69,4 +69,4 @@ for failure in failures:
     print("FAIL: " + failure)
 if failures:
     raise SystemExit(1)
-print(f"PASS: {len(expected)} pinned files across {len(manifests)} third-party manifests ({'Git index' if args.index else 'checkout'} bytes)")
+print(f"PASS: {len(expected)} pinned files across {len(manifests)} source manifests ({'Git index' if args.index else 'checkout'} bytes)")

@@ -78,6 +78,8 @@ app/Madeira/aarch64-windows/winedevice.exe
 
 # Toolchains (pulled by build scripts)
 toolchains/
+# Restored by the pinned, hash-verified converter script before CI builds.
+app/Madeira/d3d12/libmetalirconverter.dylib
 
 # Xcode
 *.xcuserdata

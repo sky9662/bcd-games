@@ -93,6 +93,14 @@ jobs:
 
       # Public fork builds: keep the official 0.1.712 FEX/wine/dxmt pins.
       # The historical Dock pin could not be fetched on the previous successful builds.
+      # Retain the converter recovery from successful run 45028450936.
+      # Check it before any expensive macOS compilation.
+      - name: Restore pinned Metal Shader Converter iOS library
+        run: bash tools/restore-metal-shader-converter.sh
+
+      - name: Verify pinned Metal Shader Converter dependencies
+        run: bash -c 'source build/madeira-d3d12/deps.sh'
+
       - name: Restore public submodules with Dock compatibility fallback
         shell: bash
         run: |
