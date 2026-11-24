@@ -191,6 +191,15 @@ let install = drive.appendingPathComponent("steamapps/common/Game", isDirectory:
 let saves = install.appendingPathComponent("savedata/\(steamID)", isDirectory: true)
 try! FileManager.default.createDirectory(at: saves, withIntermediateDirectories: true)
 try! FileManager.default.createDirectory(at: drive.appendingPathComponent("users/player/AppData", isDirectory: true), withIntermediateDirectories: true)
+// A stale Unix-named profile must not win over the recorded Windows profile.
+try! FileManager.default.createDirectory(at: drive.appendingPathComponent("users/mobile/AppData", isDirectory: true), withIntermediateDirectories: true)
+let profileRegistry = tmp.appendingPathComponent("system.reg")
+try! #"""
+[Software\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\\S-1-5-21-1-2-3-1000]
+"ProfileImagePath"="C:\\users\\player"
+"""#.write(to: profileRegistry, atomically: true, encoding: .utf8)
+check(SteamCloudPaths.profileName(prefix: tmp) == "player", "Wine ProfileList identifies the Windows save profile")
+check(SteamCloudPaths.userFolder(drive: drive)?.url.lastPathComponent == "player" && SteamCloudPaths.userFolder(drive: drive)?.how == "profile", "recorded Windows profile wins over alternate users")
 let bytes = Data("progress".utf8)
 try! bytes.write(to: saves.appendingPathComponent("data_0.sav"))
 let paths = SteamCloudPaths(drive: drive, userFolder: drive.appendingPathComponent("users/player", isDirectory: true),
