@@ -157,7 +157,8 @@ jobs:
       - name: Check upstream Windows profile unification (temporary files only)
         run: python3 tests/host/check-profile-unification.py
 
-      # Exercise the simulated cadence before expensive builds; keep native iOS compilation.
+      # Exercise controlled cadence and model readiness before expensive builds;
+      # retain native iOS compilation and the extra host-delay regression.
       - name: Check the VideoToolbox frame interpolation experiment
         run: python3 tests/host/check-vt-interp.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vt-interp.py
 
