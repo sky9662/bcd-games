@@ -24,6 +24,9 @@ static kern_return_t vti_test_timebase(mach_timebase_info_t info) {
   info->numer = info->denom = 1;
   return KERN_SUCCESS;
 }
+// Hold initial model readiness until the test has submitted its loading frames.
+// A slow host must not silently turn those frames into active-session frames.
+static _Atomic int g_vti_test_allow_start = 1;
 
 // ---- what the block calls in winemetal_unix.c
 static volatile int g_madeira_vsync_mode = 0, g_madeira_panel_hz = 120;
@@ -172,6 +175,7 @@ static BOOL fake_vt_make(FakeVTProcessor *self, FakeVTParams *p, NSString **why)
 }
 @implementation FakeVTProcessor
 - (BOOL)startSessionWithConfiguration:(id)c error:(NSError **)e {
+  while (!atomic_load(&g_vti_test_allow_start)) usleep(250);
   usleep((useconds_t)g_vt_start_ms * 1000);
   if (g_vt_start_fail) { if (e) *e = [NSError errorWithDomain:@"fake" code:-19736 userInfo:@{ NSLocalizedDescriptionKey: @"the pipeline could not be made" }]; return NO; }
   self.config = c;
@@ -323,6 +327,7 @@ int main(int argc, char **argv) {
     if (phase == 2) {
       /* ---- one picture between two frames; BGRA layer and BGRA buffers: plain copies */
       setenv("MADEIRA_VT_INTERP", "1", 1);
+      atomic_store(&g_vti_test_allow_start, 0);
       g_vt_start_ms = 400;
       layer_set_props(layer, 1280, 720);
       @autoreleasepool { game_frame(layer, q, 0, &tn); }
@@ -334,6 +339,7 @@ int main(int argc, char **argv) {
       frames(layer, q, 3, 5, 0);
       expect(g_legacy_presents == 4, "frames keep presenting as without the key while the model loads");
       g_vt_start_ms = 30;
+      atomic_store(&g_vti_test_allow_start, 1);
       expect(wait_state(2) && atomic_load(&g_vt_started) == 1 && logged(@"session ready: 1280x720, up to 1 picture(s) between two frames, pixel format 'BGRA',"),
              "the session is ready: BGRA is taken of the formats offered (420v, BGRA)");
       expect(madeira_vti_status(NULL, NULL, NULL, NULL, NULL) == 2, "the menu's status: ready, no picture yet");
@@ -472,7 +478,9 @@ int main(int argc, char **argv) {
       layer.pixelFormat = MTLPixelFormatBGRA8Unorm_sRGB;
       madeira_pfx_set_upscale(1, 2000);
       layer_set_props(layer, 960, 540);
+      atomic_store(&g_vti_test_allow_start, 0);
       frames(layer, q, 3, 5, 0);
+      atomic_store(&g_vti_test_allow_start, 1);
       expect(wait_state(2) && logged(@"pixel format '420f' (the picture is converted to it and back)"), "of 420v and 420f the full-range one is taken");
       frames(layer, q, 2, 40, 0);
       reset_ops(); g_cb_number = 0;
