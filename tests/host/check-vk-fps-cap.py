@@ -9,7 +9,7 @@ Checks:
   1. the patch applies once to Wine's committed win32u/vulkan.c (a second run only says so), adds one line right before the host's
      present and nothing else, and fails by name when its anchor moved;
   2. with the frame ring, suboptimal and 32-bit Vulkan patches, the four apply in every order with the same result;
-  3. the pacing, compiled on the host from vulkan_ios.c and timed: 60, 40 and 30 FPS hold a fast game to the limit; no limit
+  3. the pacing, compiled from vulkan_ios.c against a controlled clock and real Mach waits: 60, 40 and 30 FPS hold a fast game to the limit; no limit
      (vsync modes 0 and 2), MADEIRA_VK_FPS_CAP=0 and a link without the app's getter never wait; a game slower than the limit
      never waits either;
   4. wiring: the helper sits before Wine's vulkan.c in vulkan_ios.c, and CI runs this check and then the patch before win32u-unix
@@ -117,68 +117,9 @@ with tempfile.TemporaryDirectory(prefix="bcd-vk-fps-cap-") as tmp_name:
         check("with the frame ring, suboptimal and 32-bit Vulkan patches, all 24 orders apply and give the same win32u/vulkan.c",
               not errors and len(results) == 1, "\n".join(errors[:6]))
 
-    # 3. the pacing, timed on the host
-    vk_ios = (R / "build/win32u-unix/vulkan_ios.c").read_text()
-    start = vk_ios.index("#include <mach/mach_time.h>\nextern int madeira_get_vsync_locked(void) __attribute__((weak_import));")
-    body = vk_ios[start:vk_ios.index("\n}\n", vk_ios.index("static __attribute__((unused)) void madeira_vk_fps_cap_pace(void)")) + 3]
-    (tmp / "pace.c").write_text("#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <time.h>\n#include <unistd.h>\n" + body + r'''
-static double now_ms(void) { struct timespec t; clock_gettime(CLOCK_MONOTONIC, &t); return t.tv_sec * 1e3 + t.tv_nsec / 1e6; }
-int main(int argc, char **argv) {
-  int frames = atoi(argv[1]), work_us = atoi(argv[2]);
-  double t0 = now_ms(), waited = 0;
-  for (int i = 0; i < frames; i++) {
-    if (work_us) usleep(work_us);
-    double a = now_ms();
-    madeira_vk_fps_cap_pace();
-    waited += now_ms() - a;
-  }
-  printf("%.3f %.3f\n", (now_ms() - t0) / frames, waited / frames);
-  return 0;
-}
-''')
-    # round 707 (A2 F12): the governor's fixed frame cap (server_ios.c's ios_fps_cap), set here from TEST_CAP
-    (tmp / "getter.c").write_text('#include <stdlib.h>\nint madeira_get_vsync_locked(void) { const char *m = getenv("TEST_MODE"); return m ? atoi(m) : 1; }\n'
-                                  'volatile int ios_fps_cap;\n__attribute__((constructor)) static void cap(void) { const char *c = getenv("TEST_CAP"); ios_fps_cap = c ? atoi(c) : 0; }\n')
-    builds = [subprocess.run(["cc", "-O1", "-Wall", "-Werror", "-o", str(tmp / "pace"), str(tmp / "pace.c"), str(tmp / "getter.c")], capture_output=True, text=True),
-              subprocess.run(["cc", "-O1", "-Wall", "-Werror", "-o", str(tmp / "pace-nogetter"), str(tmp / "pace.c"), "-Wl,-U,_madeira_get_vsync_locked", "-Wl,-U,_ios_fps_cap"], capture_output=True, text=True)]
-    check("the pacing compiles on the host, with the app's getter and without it", all(b.returncode == 0 for b in builds), "\n".join(b.stderr for b in builds))
-    if all(b.returncode == 0 for b in builds):
-        def timed(binary, frames, work_us, **env):
-            e = {k: v for k, v in os.environ.items() if not k.startswith(("MADEIRA_", "TEST_"))}
-            e.update(env)
-            r = subprocess.run([str(tmp / binary), str(frames), str(work_us)], capture_output=True, text=True, env=e)
-            mean, waited = (float(x) for x in r.stdout.split())
-            return mean, waited, r.stderr
-
-        # the first frame starts the grid without a wait, so N frames take N - 1 periods
-        held = lambda mean, frames, period: period * (frames - 1) / frames * 0.97 <= mean <= period * (frames - 1) / frames + 2.5
-        m60, _, log = timed("pace", 31, 0, TEST_MODE="1")
-        check(f"60 FPS: a fast game is held to 16.7 ms a frame ({m60:.2f} ms over 31 frames)", held(m60, 31, 1000 / 60))
-        check("...and the log says once that the limit holds Vulkan presents", log.count("[winios-vk] the frame-rate limit holds Vulkan presents") == 1, log)
-        m40, _, _ = timed("pace", 21, 0, TEST_MODE="4")
-        check(f"40 FPS: 25 ms ({m40:.2f} ms over 21 frames)", held(m40, 21, 25.0))
-        m30, _, _ = timed("pace", 16, 0, TEST_MODE="3")
-        check(f"30 FPS: 33.3 ms ({m30:.2f} ms over 16 frames)", held(m30, 16, 1000 / 30))
-        free = [timed("pace", 50, 0, TEST_MODE=m)[0] for m in ("0", "2")]
-        check(f"no limit (vsync modes 0 and 2): no wait ({free[0]:.3f}, {free[1]:.3f} ms)", all(x < 1.0 for x in free))
-        # round 707 (A2 F12): the fixed frame cap holds a Vulkan game too, the lower of it and the limit
-        c25, _, _ = timed("pace", 16, 0, TEST_MODE="0", TEST_CAP="25")
-        check(f"a frame cap of 25 with no limit: 40 ms ({c25:.2f} ms over 16 frames)", held(c25, 16, 40.0))
-        c25l, _, _ = timed("pace", 16, 0, TEST_MODE="1", TEST_CAP="25")
-        check(f"a frame cap of 25 under the 60 FPS limit: the lower rate, 40 ms ({c25l:.2f} ms)", held(c25l, 16, 40.0))
-        c60l, _, _ = timed("pace", 16, 0, TEST_MODE="3", TEST_CAP="60")
-        check(f"a frame cap of 60 under the 30 FPS limit: 33.3 ms ({c60l:.2f} ms)", held(c60l, 16, 1000 / 30))
-        cbad = timed("pace", 50, 0, TEST_MODE="0", TEST_CAP="5")[0]
-        check(f"a cap outside 10...120 is none: no wait ({cbad:.3f} ms)", cbad < 1.0)
-        off, _, log = timed("pace", 50, 0, TEST_MODE="1", MADEIRA_VK_FPS_CAP="0")
-        check(f"MADEIRA_VK_FPS_CAP=0: no wait ({off:.3f} ms), and the log says so", off < 1.0 and "does not hold" in log, log)
-        nog, _, _ = timed("pace-nogetter", 50, 0)
-        check(f"a link without the app's getter: no wait ({nog:.3f} ms)", nog < 1.0)
-        _, slow_wait, _ = timed("pace", 20, 25000, TEST_MODE="1")
-        check(f"a game slower than the limit (25 ms a frame) never waits ({slow_wait:.3f} ms a frame)", slow_wait < 1.0)
-        m_mid, mid_wait, _ = timed("pace", 31, 8000, TEST_MODE="1")
-        check(f"a faster game (8 ms of work a frame) is held to 16.7 ms ({m_mid:.2f} ms, {mid_wait:.2f} ms waited a frame)",
-              held(m_mid, 31, 1000 / 60) and mid_wait > 2.0)
+    # Clock-controlled logic checks plus a real Mach wait integration check.
+    from vk_fps_cap_harness import check_pacing
+    check_pacing(R, tmp, check, real_clock=True)
 
 # 4. wiring
 vk_ios = (R / "build/win32u-unix/vulkan_ios.c").read_text()

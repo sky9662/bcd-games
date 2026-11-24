@@ -37,6 +37,9 @@ jobs:
       - name: Check unsigned IPA publication contract before macOS
         run: python3 tests/host/check-ipa-workflow-contract.py
 
+      - name: Check Vulkan pacing with a controlled clock
+        run: python3 tests/host/check-vk-fps-pacing.py
+
       - name: Preflight tracked test inputs and report upstream fixture omissions
         # Inspect the complete host-test suite before using a macOS runner.
         # Tracked inputs are fatal when missing; missing *untracked* upstream
@@ -2731,7 +2734,7 @@ jobs:
       # madeira-bcd (2026-11-22, build 703; X-Plane 12 drew its menu at the screen's 120 with the limit at 60): the app's frame-rate limit (60 / 40 /
       # 30 FPS, the vsync mode) holds a Windows Vulkan game's presents too, in win32u before the host's present (build/win32u-unix/vulkan_ios.c,
       # madeira_vk_fps_cap_pace); MADEIRA_VK_FPS_CAP=0 turns it off. The check runs first: the patch in every order with the other three that change
-      # win32u/vulkan.c, and the pacing timed on the runner.
+      # win32u/vulkan.c, exact pacing with a controlled clock, and real Mach waits on the runner.
       - name: Check and patch Wine's win32u Vulkan present (frame-rate limit)
         run: |
           python3 tests/host/check-vk-fps-cap.py --require-wine || python3 tools/ci-optional-fixture-check.py tests/host/check-vk-fps-cap.py --require-wine
