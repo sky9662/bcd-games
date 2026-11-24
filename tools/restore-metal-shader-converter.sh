@@ -1,4 +1,7 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 thebcd69 (BCD)
+# BCD Material: additional terms under GPL-3.0 section 7 apply; see LICENSE-BCD.md.
 # Preserve the hash-verified restoration used by successful run 45028450936.
 # The iOS library is distributed under app/Madeira/d3d12/NOTICE.txt.
 set -euo pipefail

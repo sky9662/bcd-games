@@ -40,6 +40,9 @@ jobs:
       - name: Check Vulkan pacing with a controlled clock
         run: python3 tests/host/check-vk-fps-pacing.py
 
+      - name: Check interpolation cadence under host delay
+        run: python3 tests/host/check-vt-interp-clock.py
+
       - name: Verify pinned third-party source manifests
         run: python3 tools/check-vendored-manifests.py
 
@@ -153,6 +156,10 @@ jobs:
       # Also guard fresh-install seeding before the one-shot startup migration.
       - name: Check upstream Windows profile unification (temporary files only)
         run: python3 tests/host/check-profile-unification.py
+
+      # Exercise the simulated cadence before expensive builds; keep native iOS compilation.
+      - name: Check the VideoToolbox frame interpolation experiment
+        run: python3 tests/host/check-vt-interp.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vt-interp.py
 
       # The upstream checkout omits some docs and fork-only log-intake fixtures.
       # The fallback only waives a host regression test if a rerun proves an
@@ -3945,9 +3952,6 @@ jobs:
       # VideoToolbox make the pictures between two frames and presents them. madeira_vti_probe (Settings > Graphics > Experimental)
       # finds out on a device which sizes it takes and how long a pair takes. Without the variable both hooks return at their first
       # test (tests/host/check-vt-interp.py). After the pacing patch (it builds on present-fx). Native only.
-      - name: Check the VideoToolbox frame interpolation experiment
-        run: python3 tests/host/check-vt-interp.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vt-interp.py
-
       # madeira-bcd (Porthole port, item 5): scheduler hints for a running game (bcd.cfg sched-hints = 1: an activity for the process and
       # the kernel's first latency and throughput tiers) and a watch on the fast cores' clock ([clamp] lines; sched-hints = watch logs
       # without a hint). App only; without the key nothing is asked of iOS (tests/host/check-sched-hints.py runs the kernel calls here).

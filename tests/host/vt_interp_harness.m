@@ -18,6 +18,12 @@
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <math.h>
+#include "vt_interp_clock.h"
+
+static kern_return_t vti_test_timebase(mach_timebase_info_t info) {
+  info->numer = info->denom = 1;
+  return KERN_SUCCESS;
+}
 
 // ---- what the block calls in winemetal_unix.c
 static volatile int g_madeira_vsync_mode = 0, g_madeira_panel_hz = 120;
@@ -232,8 +238,13 @@ static int wait_idle(void) {
   drain_main();
   return ok;
 }
-static double now_s(void) { struct timespec t; clock_gettime(CLOCK_MONOTONIC, &t); return t.tv_sec + t.tv_nsec / 1e9; }
-static void sleep_until(double t) { double d = t - now_s(); if (d > 0) usleep((useconds_t)(d * 1e6)); }
+static void frame_delay_us(useconds_t us) {
+  vti_test_advance_us(us);
+  // Preserve real asynchronous work and backpressure. An optional extra host
+  // delay proves it cannot turn a 50 FPS input into a different simulated rate.
+  const char *extra = getenv("BCD_VTI_TEST_DELAY_US");
+  usleep(us + (extra ? (useconds_t)strtoul(extra, NULL, 10) : 0));
+}
 static int wait_state(int state) {
   int i;
   for (i = 0; i < 3000 && atomic_load(&g_vti.state) != state; i++) usleep(1000);
@@ -247,12 +258,11 @@ static int count_of(NSString *needle) {
 static int logged(NSString *needle) {
   @synchronized (g_log) { return [g_log rangeOfString:needle].location != NSNotFound; }
 }
-// One frame of the game every `ms` on the clock, each waited for (the worker keeps up).
+// One frame every `ms` on the controlled game clock; wait for the real worker.
 static void frames(FakeLayer *layer, FakeQueue *q, int n, int ms, int how) {
   NSString *tn = nil;
-  double t0 = now_s();
   for (int i = 0; i < n; i++) {
-    sleep_until(t0 + (i + 1) * ms / 1000.0);
+    frame_delay_us((useconds_t)ms * 1000);
     @autoreleasepool { game_frame(layer, q, how, &tn); }
     wait_worker();
   }
@@ -329,14 +339,14 @@ int main(int argc, char **argv) {
       expect(madeira_vti_status(NULL, NULL, NULL, NULL, NULL) == 2, "the menu's status: ready, no picture yet");
 
       /* the first frame with the session: nothing before it */
-      usleep(33000); reset_ops(); g_cb_number = 0;
+      frame_delay_us(33000); reset_ops(); g_cb_number = 0;
       @autoreleasepool { game_frame(layer, q, 0, &tn); }
       expect(wait_idle() && [ops_text() hasPrefix:@"game: commit | own2: copy tex1(1280x720) -> surf1 | own2: commit | cadence presentVTInterp"],
              "a frame with the session: right behind the game's own buffer its picture is copied into a pixel buffer, on the game's thread");
       expect(!has(@"VT:") && has(@"copy tex1(1280x720) -> drawable5(1280x720)") && count_of(@": present ") == 1 && g_legacy_presents == 4,
              "nothing before it yet: the worker presents the game's frame alone, and the present call's own code did not run");
       /* the second: one picture */
-      usleep(33000); reset_ops(); g_cb_number = 0;
+      frame_delay_us(33000); reset_ops(); g_cb_number = 0;
       @autoreleasepool { game_frame(layer, q, 0, &tn); }
       expect(wait_idle() && [ops_text() isEqualToString:
               @"game: commit | own2: copy tex1(1280x720) -> surf2 | own2: commit | cadence presentVTInterp | own2: waited for | "
@@ -376,7 +386,7 @@ int main(int argc, char **argv) {
       frames(layer, q, 2, 33, 0);
       g_vt_process_ms = 120; reset_ops();
       { int legacy = g_legacy_presents, i; unsigned long long busy0 = atomic_load(&g_vti.skip_busy);
-        for (i = 0; i < 6; i++) { usleep(33000); @autoreleasepool { game_frame(layer, q, 0, &tn); } }
+        for (i = 0; i < 6; i++) { frame_delay_us(33000); @autoreleasepool { game_frame(layer, q, 0, &tn); } }
         expect(wait_idle() && g_legacy_presents == legacy && atomic_load(&g_vti.skip_busy) > busy0,
                "VideoToolbox takes 120 ms a pair at 30 FPS: frames that find the worker busy get no pictures, and none is presented behind its back");
         expect(count_of(@": present drawable") >= 6 && !has(@"-> nil"), "every frame of the game still reached the screen"); }
@@ -399,14 +409,14 @@ int main(int argc, char **argv) {
       expect(has(@"VT:"), "the one after that has again");
 
       /* ---- a stall */
-      usleep(300000); reset_ops(); frames(layer, q, 1, 1, 0);
+      frame_delay_us(300000); reset_ops(); frames(layer, q, 1, 1, 0);
       expect(!has(@"VT:"), "after 300 ms without a frame the frame before is no neighbour: no picture");
 
       /* ---- the menu's switch */
       frames(layer, q, 2, 33, 0);
       expect(madeira_vti_status(NULL, NULL, NULL, NULL, NULL) >= 2, "status: ready or making pictures");
       expect(madeira_vti_set(0) == 0 && wait_state(0), "switched off from the menu");
-      usleep(50000);
+      frame_delay_us(50000);
       expect(atomic_load(&g_vt_ended) == 1 && logged(@"session for 1280x720 closed"), "the session is closed and its model given back");
       reset_ops();
       @autoreleasepool { game_frame(layer, q, 0, &tn); }
@@ -422,7 +432,7 @@ int main(int argc, char **argv) {
       layer_set_props(layer, 960, 540);
       frames(layer, q, 3, 5, 0);
       expect(wait_state(2) && atomic_load(&g_vti.w) == 960 && logged(@"session ready: 960x540"), "another size: a session for it");
-      usleep(50000);
+      frame_delay_us(50000);
       expect(atomic_load(&g_vt_ended) == 2, "and the one for the old size is closed");
       reset_ops(); frames(layer, q, 3, 33, 0);
       expect(has(@"VT:") && has(@"(960x540)"), "pictures at the new size");
@@ -442,15 +452,15 @@ int main(int argc, char **argv) {
       expect(wait_state(2), "switched off and on: a new session after the errors");
       frames(layer, q, 2, 33, 0);
       g_vt_process_ms = 150;
-      usleep(33000);
+      frame_delay_us(33000);
       @autoreleasepool { game_frame(layer, q, 0, &tn); }
-      usleep(33000);
+      frame_delay_us(33000);
       @autoreleasepool { game_frame(layer, q, 0, &tn); }
       [layer release]; layer = nil;
       expect(wait_idle(), "the layer is released while two frames are with the worker: they end without a crash");
       g_vt_process_ms = 2;
       madeira_vti_session_ended();
-      usleep(80000);
+      frame_delay_us(80000);
       expect(atomic_load(&g_vt_ended) == atomic_load(&g_vt_started) && atomic_load(&g_vti.state) == 0, "the game ended: every session that was started is closed");
       return g_fails ? 1 : 0;
     }
@@ -474,14 +484,8 @@ int main(int argc, char **argv) {
              "25 FPS on a 120 Hz screen: three pictures at a quarter, a half and three quarters; all four frames are enlarged by MetalFX and presented, the later three at their times");
       expect(before(@"pass surf4.y -> ", @"pass surf5.y -> ") && before(@"pass surf5.y -> ", @"pass surf6.y -> ") && before(@"pass surf6.y", @"MetalFX tex1(960x540)"),
              "the pictures are converted back and shown in order, the game's own frame last");
-      /* 60 FPS: only the middle one fits. The engine measures real time between presents: on a loaded machine the 20 ms frames
-       * can come late enough to count as a slower game (three pictures). Such a run is measured again, three times at most. */
-      for (int tries = 0; tries < 3; tries++) {
-        double t0 = now_s();
-        frames(layer, q, 12, 20, 0); reset_ops(); frames(layer, q, 3, 20, 0);
-        if ((now_s() - t0) / 15.0 < 0.026) break;
-        dprintf(STDOUT_FILENO, "   (the machine was slow: %.1f ms a frame instead of 20; measured again)\n", (now_s() - t0) / 15.0 * 1000.0);
-      }
+      /* 50 FPS: only the middle picture fits, independent of host oversleep. */
+      frames(layer, q, 12, 20, 0); reset_ops(); frames(layer, q, 3, 20, 0);
       expect(has(@"-> 1 picture(s) at 0.50") && !has(@"3 picture(s)"), "the same session at 50 FPS: one picture, at the half");
       madeira_vti_session_ended();
 

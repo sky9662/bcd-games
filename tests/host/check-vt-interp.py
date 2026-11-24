@@ -221,7 +221,13 @@ int main(void) {
         tests = mine[mine.index("//@@TESTS"):]
         spot = "// The four thunks, cut down to the old behaviour plus the script's own hook lines.\n"
         assert h.count(spot) == 1
-        h = h.replace(spot, prelude + mod.BLOCK[len(mod.A_BLOCK):] + after_block + spot)
+        # Keep the production block unchanged. Only its clock APIs see the
+        # simulated game cadence; real worker, GPU and model waits stay real.
+        clock_hooks = ("#define mach_absolute_time vti_test_absolute_time\n"
+                       "#define mach_timebase_info vti_test_timebase\n"
+                       "#define CACurrentMediaTime vti_test_seconds\n")
+        clock_end = "#undef mach_absolute_time\n#undef mach_timebase_info\n#undef CACurrentMediaTime\n"
+        h = h.replace(spot, prelude + clock_hooks + mod.BLOCK[len(mod.A_BLOCK):] + clock_end + after_block + spot)
         # present-fx's stand-ins, for two threads and for passes: where a pass draws to, command buffers numbered atomically, and
         # the recorded operations printed with a failing check
         for a, b in (
@@ -241,7 +247,7 @@ int main(void) {
             assert h.count(a) == 1, a[:60]
             h = h.replace(a, b)
         (t / "h.m").write_text(h + tests)
-        flags = ["-fno-objc-arc", "-fblocks", "-O1", "-g", "-Wall", "-Wno-unused-function", "-Wno-unused-variable", "-Wno-objc-method-access",
+        flags = ["-I" + str(R / "tests/host"), "-fno-objc-arc", "-fblocks", "-O1", "-g", "-Wall", "-Wno-unused-function", "-Wno-unused-variable", "-Wno-objc-method-access",
                  "-Wno-incompatible-pointer-types", "-Wno-deprecated-declarations", "-Wno-objc-protocol-method-implementation",
                  "-Wno-unguarded-availability-new", "-DMADEIRA_VTI_AVAILABLE=1",
                  "-framework", "Foundation", "-framework", "QuartzCore", "-framework", "Metal", "-framework", "MetalFX", "-framework", "CoreGraphics",
@@ -250,8 +256,10 @@ int main(void) {
         if check("the script's block and hook lines compile on the host with the stand-ins", b.returncode == 0):
             for phase, what in ((0, "the key is not set"), (1, "the key without present-fx"), (2, "one picture: the whole life of a session"),
                                 (3, "three pictures, 4:2:0 buffers, an sRGB layer, MetalFX upscaling"), (4, "what VideoToolbox or the picture do not allow"),
-                                (5, "the device probe")):
-                r = subprocess.run([str(t / "h"), str(phase)], capture_output=True, text=True, timeout=300)
+                                (5, "the device probe"), (3, "same assertions with 30 ms extra host delay per frame")):
+                env = os.environ.copy()
+                env["BCD_VTI_TEST_DELAY_US"] = "30000" if "extra host delay" in what else "0"
+                r = subprocess.run([str(t / "h"), str(phase)], env=env, capture_output=True, text=True, timeout=300)
                 print("\n".join(l for l in r.stdout.splitlines() if l.startswith(("ok  ", "FAIL", "     "))))
                 if r.returncode:
                     print(r.stderr[-1500:])
