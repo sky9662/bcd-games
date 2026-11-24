@@ -40,6 +40,9 @@ jobs:
       - name: Check Vulkan pacing with a controlled clock
         run: python3 tests/host/check-vk-fps-pacing.py
 
+      - name: Verify pinned third-party source manifests
+        run: python3 tools/check-vendored-manifests.py
+
       - name: Preflight tracked test inputs and report upstream fixture omissions
         # Inspect the complete host-test suite before using a macOS runner.
         # Tracked inputs are fatal when missing; missing *untracked* upstream

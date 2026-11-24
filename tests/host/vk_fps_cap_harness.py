@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 thebcd69 (BCD)
+# BCD Material: additional terms under GPL-3.0 section 7 apply; see LICENSE-BCD.md.
 """Exercise the unchanged Vulkan pacing function with deterministic and real clocks."""
 import os
 import subprocess

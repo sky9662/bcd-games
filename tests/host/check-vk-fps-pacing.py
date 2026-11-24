@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
 """Run portable clock-controlled Vulkan pacing checks before the macOS build."""
 from pathlib import Path
 import sys
