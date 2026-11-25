@@ -126,6 +126,10 @@ with tempfile.TemporaryDirectory() as tmp:
     lines = [l for l in ((first if carries else older) + "\n" + tail).splitlines() if l.startswith("python3 ") or l.startswith("    python3 ")]
     problems, applied = [], 0
     for line in lines:
+        # This read-only guard is executed separately by the real build before its overlay.
+        # It does not modify the FEX tree and must not be replayed as an overlay.
+        if line.strip() == 'python3 "$R/tests/host/check-turing-exec-recheck.py"':
+            continue
         m = re.match(r'\s*python3 "\$R/(tools/[\w.-]+\.py)" "\$R/FEX(/[^"]*)?"(.*?)(?: \|\| echo .*)?$', line)
         if not m:
             problems.append("not understood: " + line[:80])
