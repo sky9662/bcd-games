@@ -43,3 +43,7 @@ User asked about half-hour checks. This Codex environment cannot create a schedu
 ## Latest checkpoint — 2026-11-25
 
 Read the [permanent build runbook](local-build/IPA-BUILD-RUNBOOK.md) before all future builds. Run #62 (45592898592, a34d1b66671179cac73e094c0c484cd6a54fe4d3) is active at documentation review, with both Linux jobs and native VideoToolbox queue/full tests green. Follow the active run even if a docs-only commit advances the branch head; no duplicate dispatch. The exact target artifact and actual DXC/OpenGL builds are not yet verified. Update the ledger with future failures and confirmed successes. The earlier #59 checkpoint is historical.
+
+## Approved follow-up after verified IPA
+
+See [shared IPA infrastructure pending task](local-build/IPA-BUILD-RUNBOOK.md#pending-project-task--shared-ipa-infrastructure-user-approved-2026-11-25). Separate CI infrastructure from custom features only after the current IPA is verified; preserve independent PR branches and establish cross-branch Codex discovery. Do not merge branches or interrupt the active build for this task.
