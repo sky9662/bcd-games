@@ -31,6 +31,7 @@ jobs:
       # Run a cheap static checkout-dependency audit BEFORE requesting an
       # expensive macOS build runner. Missing untracked upstream documents
       # and accidental missing host scripts must be found early, not hours in.
+      # Run 64: classify the read-only Turing guard separately from FEX overlay replay.
       - name: Check strict workflow command normalization
         run: python3 tests/host/check-workflow-commands.py
 
