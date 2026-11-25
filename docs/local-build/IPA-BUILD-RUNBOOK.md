@@ -33,6 +33,8 @@ First fatal named step from actual Actions jobs; step numbers change as checks m
 
 | [63](https://github.com/sky9662/bcd-games/actions/runs/45610481322) | 91 round 624 log lines | Previous fix changed exact mandatory DLL verifier command from inline to YAML block; restore original step, add separate strict shadow verification | Existing assertion and stage controls checked against repaired workflow; CI pending |
 
+| [65](https://github.com/sky9662/bcd-games/actions/runs/45633943883) | 896 Steam for Windows | Missing untracked docs/STEAM_DESKTOP.md only; explicit documentation exception | DXC restored, OpenGL and all 44 named DLLs verified, FEX lean passed; fix pending CI |
+
 ## Mandatory workflow for every future version
 
 ### 1. Before editing or dispatch
@@ -107,3 +109,7 @@ Acceptance: a new isolated feature can use the already proven build infrastructu
 ## Run 64 — separate read-only guard from overlay replay
 
 [Run #64](https://github.com/sky9662/bcd-games/actions/runs/45615712650), source `1712fba422c441e3c5bca65bd870df0e96762380`, passed both Linux jobs and failed macOS step 887 in check-fex-callret-lean.py. All 19 overlays and subsequent lean behavior checks passed individually; parser rejected the exact read-only Turing guard command as an unknown overlay. Fix `2b4cd4fb8c4ea2832ed6071186afeab68daafd6d` classifies only that exact command separately; real build still executes it, unknown commands still fail, overlay count and order checks remain. Static anchor and strictness checks performed; full checkout/native tests not executed locally. Workflow trigger `f168b0d1bb3a3b994ee93b574cc60ae1bf274da7`; next CI evidence pending. No production or cache changes.
+
+## Run 65 — missing public documentation, not Steam functionality
+
+[Run #65](https://github.com/sky9662/bcd-games/actions/runs/45633943883), source `f168b0d1bb3a3b994ee93b574cc60ae1bf274da7`: both Linux jobs passed; macOS reached step 896 of 920 named steps, 859 successful including #64 FEX lean (887), opt-in source (674), named DLLs (821, all 44), shadowing (822, exactly dcomp), and actual OpenGL DLL build. DXC cache restored. Only `docs/STEAM_DESKTOP.md describes it` failed twice; native functional and wiring assertions passed. This exact document is absent in the public tree. Keep all six terms when present and strict missing-file failure by default; explicit public-export mode allows only this absent untracked document. Tracked missing, malformed, directory, symlink or Git error remain fatal. Standalone checker with eight controls and actual checkout check early in Linux, full Steam test uses same checker with step-scoped env and original command. Next X-Plane, Dock census and clipboard tests reviewed for similar missing-document assertions; none seen. No production or cache-key changes. New checker awaits CI execution; no claim of local execution. Remaining farm/OpenGL/Vulkan/archive/package/IPA checks pending. No IPA yet.

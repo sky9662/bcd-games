@@ -55,3 +55,7 @@ DXC 1.9.2609 compiled, verified and cached; native VideoToolbox passed. Run #62 
 ## Run #63 completed — next run
 
 Both Linux jobs and native VideoToolbox passed. Run #63 stopped at step 91: the #62 fix changed the named opt-in DLL verification's exact YAML run command to a multiline block, violating the legacy kernelbase regression. Restore the original command and separate the mandatory shadowing step; early Linux workflow stage controls added. Preserve DXC cache and strict payload checks. New workflow push queues next run; no duplicate dispatch. Infrastructure follow-up remains blocked until verified IPA.
+
+## Run #65 checkpoint
+
+Reached step 896, DXC cache restored, OpenGL built and 44 opt-in DLLs verified. Only absent STEAM_DESKTOP.md assertion failed; narrow explicit public-source documentation exception added with early controls. Preserve strict functional/IPA checks. Next workflow push triggers new run; no duplicate dispatch. Infrastructure follow-up blocked until verified IPA.

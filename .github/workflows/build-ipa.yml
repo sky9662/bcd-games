@@ -41,6 +41,9 @@ jobs:
       - name: Check strict opt-in shadowing on partial and complete DLL sets
         run: python3 tools/check-optin-shadowing.py --self-test
 
+      - name: Check Steam Desktop public documentation contract before macOS
+        run: python3 tools/check-steam-desktop-doc.py --self-test --public-source
+
       - name: Check DXC and Wine opt-in build script syntax
         run: bash -n tools/build-dxcompiler.sh && bash -n tools/build-wine-extra-dlls.sh
 
@@ -6147,6 +6150,9 @@ jobs:
       # connection taken up again, BCD Dock's folder as it was); the update host's rules against a server on the runner; the session's settings,
       # the registry values with BCD Dock's own check afterwards, the log watch, and the wiring of the session. Fixtures are made at run time.
       - name: Check Steam for Windows (experimental)
+        # The public export omits one untracked documentation fixture only.
+        env:
+          BCD_STEAM_DESKTOP_PUBLIC_SOURCE: '1'
         run: python3 tests/host/check-steam-desktop.py || python3 tools/ci-optional-fixture-check.py tests/host/check-steam-desktop.py
 
       # madeira-bcd (2026-11-22, build 701): X-Plane 12 at its lowest graphics settings (xplane-graphics = lowest, XPlaneGraphics.swift):
