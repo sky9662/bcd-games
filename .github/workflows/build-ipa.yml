@@ -40,6 +40,9 @@ jobs:
       - name: Check Vulkan pacing with a controlled clock
         run: python3 tests/host/check-vk-fps-pacing.py
 
+      - name: Check public-export Vulkan packaging contract
+        run: python3 tests/host/check-vulkan-bcd.py --public-source
+
       - name: Check ARM harnesses with preexisting SDK macros
         run: python3 tests/host/check-host-arm-accessors.py
 
@@ -5112,7 +5115,7 @@ jobs:
           python3 tests/host/check-vulkan-surface.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vulkan-surface.py
           python3 tests/host/check-vk-surface-query.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vk-surface-query.py
           python3 tests/host/check-vulkan-layer-geometry.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vulkan-layer-geometry.py
-          python3 tests/host/check-vulkan-bcd.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vulkan-bcd.py
+          python3 tests/host/check-vulkan-bcd.py --public-source || python3 tools/ci-optional-fixture-check.py tests/host/check-vulkan-bcd.py --public-source
       # madeira-bcd (KosmicKrisp, the third word of a game's vulkan line; Madeira #462 and its branch playport/kosmickrisp): BCD's parts. Without the
       # word nothing changes; the library runs only from iOS 26 on a Metal 4 GPU, else Vulkan stays off; the shader cache variables are the session's;
       # the build's pins, patches and CI steps; the OSMesa build's cache key is untouched.

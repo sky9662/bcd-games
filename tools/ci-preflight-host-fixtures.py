@@ -43,11 +43,11 @@ def read_calls(node, known):
     for item in ast.walk(node):
         if not isinstance(item, ast.Call) or not isinstance(item.func, ast.Attribute):
             continue
-        if item.func.attr not in ('read_text', 'read_bytes'):
+        if item.func.attr not in ('read_text', 'read_bytes', 'is_file', 'exists'):
             continue
         target = source_path(item.func.value, known)
         if target is not None:
-            yield item.lineno, target
+            yield item.lineno, target, item.func.attr
 
 
 def scan(root):
@@ -89,7 +89,7 @@ def scan(root):
         for stmt in tree.body:
             direct = not isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef, ast.If,
                                            ast.For, ast.While, ast.Try, ast.With, ast.ClassDef))
-            for line, target in read_calls(stmt, known):
+            for line, target, operation in read_calls(stmt, known):
                 target = target.resolve(strict=False)
                 if not target.is_relative_to(root) or target.is_file():
                     continue
@@ -118,9 +118,11 @@ def scan(root):
                             ['git', 'ls-files', '--error-unmatch', '--', relative],
                             cwd=root, capture_output=True).returncode == 0
                         optional = not tracked
-                    severity = ('OPTIONAL' if optional else
+                    # A presence test can intentionally assert absence. Report
+                    # it for review, never invent a fatal read or waive a check.
+                    severity = ('OPTIONAL' if optional else 'REVIEW' if operation in ('is_file', 'exists') else
                                 'FATAL' if direct and checked_in else 'REVIEW')
-                    results.append((severity, name, line, f'missing literal read: {relative}'))
+                    results.append((severity, name, line, f'missing literal {operation}: {relative}'))
     return len(scripts), results
 
 
