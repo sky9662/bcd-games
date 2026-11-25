@@ -85,6 +85,7 @@ typedef uintptr_t ULONG_PTR;
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define EXC_BAD_ACCESS 1
 typedef struct { uint64_t __x[29]; uint64_t __fp, __lr, __sp, __pc; uint32_t __cpsr, __pad; } arm_thread_state64_t;
+#undef __darwin_arm_thread_state64_get_pc
 #define __darwin_arm_thread_state64_get_pc(s) ((s).__pc)
 typedef struct { void *Peb; struct { void *UniqueProcess, *UniqueThread; } ClientId; } TEB;
 #define JIT_LO 0x150000000ull

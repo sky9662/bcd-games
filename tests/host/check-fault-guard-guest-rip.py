@@ -213,6 +213,11 @@ static int mach_task_self(void) { return 0; }
 static int mach_vm_region(int task, mach_vm_address_t *q, mach_vm_size_t *rs,
                          int f, vm_region_info_t r, mach_msg_type_number_t *rc, mach_port_t *ro)
 { (void)task; (void)q; (void)rs; (void)f; (void)r; (void)rc; (void)ro; return 1; }
+/* Darwin SDKs already define these accessors as macros. This synthetic
+ * context deliberately has a different layout; isolate its stand-ins. */
+#undef __darwin_arm_thread_state64_get_sp
+#undef __darwin_arm_thread_state64_set_sp
+#undef __darwin_arm_thread_state64_set_pc_fptr
 static uint64_t __darwin_arm_thread_state64_get_sp(arm_thread_state64_t s) { return s.sp; }
 #define __darwin_arm_thread_state64_set_sp(s, v) ((s).sp = (v))
 #define __darwin_arm_thread_state64_set_pc_fptr(s, v) ((s).pc = (uintptr_t)(v))
@@ -280,7 +285,7 @@ def build(tmp, name, text):
     path.write_text(text)
     exe = Path(tmp) / name
     r = subprocess.run([cc] + flags + [str(path), '-o', str(exe)], capture_output=True, text=True)
-    check('the production %s compiles on the host' % name, r.returncode == 0, r.stderr[-3000:])
+    check('the production %s compiles on the host' % name, r.returncode == 0, r.stderr[:5000])
     return exe if r.returncode == 0 else None
 
 

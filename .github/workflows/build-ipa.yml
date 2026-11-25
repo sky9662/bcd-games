@@ -40,6 +40,9 @@ jobs:
       - name: Check Vulkan pacing with a controlled clock
         run: python3 tests/host/check-vk-fps-pacing.py
 
+      - name: Check ARM harnesses with preexisting SDK macros
+        run: python3 tests/host/check-host-arm-accessors.py
+
       - name: Check interpolation cadence under host delay
         run: python3 tests/host/check-vt-interp-clock.py
 
@@ -161,6 +164,11 @@ jobs:
       # retain native iOS compilation and the extra host-delay regression.
       - name: Check the VideoToolbox frame interpolation experiment
         run: python3 tests/host/check-vt-interp.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vt-interp.py
+
+      - name: Check SDK-isolated ARM fault harnesses
+        run: |
+          python3 tests/host/check-fault-guard-guest-rip.py
+          python3 tests/host/check-fault-loop-guest-progress.py
 
       # The upstream checkout omits some docs and fork-only log-intake fixtures.
       # The fallback only waives a host regression test if a rerun proves an
@@ -4452,7 +4460,6 @@ jobs:
       - name: Check the build 591 engine fixes
         run: |
           python3 tests/host/check-fault-guard-rate.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fault-guard-rate.py
-          python3 tests/host/check-fault-guard-guest-rip.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fault-guard-guest-rip.py
           python3 tests/host/check-recovery-log-sample.py || python3 tools/ci-optional-fixture-check.py tests/host/check-recovery-log-sample.py
           python3 tests/host/check-pool-split-retry.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-split-retry.py
           python3 tests/host/check-pool-tagged.py || python3 tools/ci-optional-fixture-check.py tests/host/check-pool-tagged.py
@@ -4889,7 +4896,6 @@ jobs:
         run: |
           python3 tests/host/check-shared-section-exec.py || python3 tools/ci-optional-fixture-check.py tests/host/check-shared-section-exec.py
           python3 tests/host/check-ntdll-data-sync-range.py || python3 tools/ci-optional-fixture-check.py tests/host/check-ntdll-data-sync-range.py
-          python3 tests/host/check-fault-loop-guest-progress.py || python3 tools/ci-optional-fixture-check.py tests/host/check-fault-loop-guest-progress.py
           python3 tests/host/check-ntdll-xsec.py || python3 tools/ci-optional-fixture-check.py tests/host/check-ntdll-xsec.py
       # madeira-bcd: the Mach handler repairs a TEB access whose base an ADD computed from a
       # zeroed x18, also when the ADD wrote its own index register (HZD build 500).
