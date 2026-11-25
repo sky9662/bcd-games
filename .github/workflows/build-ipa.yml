@@ -140,6 +140,9 @@ jobs:
       # before it dispatches this workflow, commits it as "Build N (...)".
       # GitHub's own run_number does not follow that sequence, so nothing below
       # uses it.
+      - name: Recover exact upstream FEX and DXMT test baselines
+        run: python3 tools/fetch-host-test-baselines.py
+
       - name: Build number
         id: bn
         shell: bash
@@ -176,7 +179,7 @@ jobs:
       # The upstream checkout omits some docs and fork-only log-intake fixtures.
       # The fallback only waives a host regression test if a rerun proves an
       # absent, untracked optional fixture. Compiler and DLL checks stay fatal.
-      - name: Validate strict host-fixture fallback and DXMT baseline guard
+      - name: Validate strict host-fixture fallback
         run: |
           python3 -m py_compile tools/ci-optional-fixture-check.py
           # The upstream KosmicKrisp test refers to a Playport README missing
@@ -671,10 +674,9 @@ jobs:
           python3 tests/host/check-godot-composition.py || python3 tools/ci-optional-fixture-check.py tests/host/check-godot-composition.py
           python3 tests/host/check-clr-death-diag.py || python3 tools/ci-optional-fixture-check.py tests/host/check-clr-death-diag.py
           python3 tests/host/check-crypt32-root-enum.py || python3 tools/ci-optional-fixture-check.py tests/host/check-crypt32-root-enum.py
-          # The upstream DXMT overlay base db546ee is no longer fetchable from origin.
-          # Skip this unrelated host regression only; keep the actual DXMT build and IPA validation strict.
-          echo '::warning::Skipping check-gpu-stall.py: upstream DXMT overlay base db546ee unavailable (not our ref)'
-          echo '::warning::Skipping check-gpu-time-wow64.py: same unavailable upstream DXMT overlay base db546ee'
+          # Exact canonical history is recovered before this suite.
+          python3 tests/host/check-gpu-stall.py || python3 tools/ci-optional-fixture-check.py tests/host/check-gpu-stall.py
+          python3 tests/host/check-gpu-time-wow64.py || python3 tools/ci-optional-fixture-check.py tests/host/check-gpu-time-wow64.py
           python3 tests/host/check-noexec-who.py || python3 tools/ci-optional-fixture-check.py tests/host/check-noexec-who.py
           python3 tests/host/check-desktop-shell.py || python3 tools/ci-optional-fixture-check.py tests/host/check-desktop-shell.py
           python3 tests/host/check-d9-texfmt.py || python3 tools/ci-optional-fixture-check.py tests/host/check-d9-texfmt.py

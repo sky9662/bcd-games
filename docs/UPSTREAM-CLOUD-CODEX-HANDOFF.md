@@ -24,3 +24,18 @@ gh workflow run build-ipa.yml --repo sky9662/bcd-games --ref feature/bcd-0712-up
 ```
 Use GitHub's macOS runner for IPA, not native Windows Xcode. Preserve the prior successful pipeline, Xcode/SDK selection, submodule fallback, FEX patch, artifact reuse and preflight handling. Review the current workflow rather than rewriting it. Validate the profile parser, migration test, existing Cloud, fetch and remotecache regressions; verify startup ordering, fresh-prefix handling and baseline reset. Fix actual errors on this branch only. If a run fails, inspect failed job logs, correct root cause, commit and retry. Do not silently skip tests or mark missing fixtures as passes.
 Expected artifact: bcd-0712-upstream-cloud-unsigned-ipa. Verify IPA exists and includes both prior feature changes and Cloud migration. Report actual run URL, artifact URL, SHA, test outcomes, installation instructions, and backup warning. No upstream PR, main changes, release replacement or device-save modifications. Current handoff does NOT assert CI or IPA success.
+
+
+## Resume checkpoint — 2026-11-25, Windows to ChatGPT
+
+User requested handing this work back to ChatGPT because Codex usage is nearly exhausted. Continue directly through GitHub; no remote control of the Windows PC is required. Work only on `feature/bcd-0712-upstream-cloud-ipa` and read `docs/local-build/CI-LESSONS.md` first.
+
+Last completed run: #59, https://github.com/sky9662/bcd-games/actions/runs/45532286385, source `5b8edd5bf8332bc59710d627d232dc195deca850`. It reached step 773 of roughly 918, then failed fetching the historical FEX test baseline from the squashed mirror. No target IPA has been produced. Reaching 84% of step numbers is not a completion-time guarantee: App archive/package/payload verification have not run yet.
+
+The checkpoint commit accompanying this document restores exact canonical FEX/DXMT test history, removes the old baseline skips, restores both GPU checks, keeps the final ARM64EC exit-overlay ordering while retaining Turing, and fixes the shader-cache host fixture include. Local results and explicit skips are in CI-LESSONS.md. Both build submodule HEADs are unchanged. Main, PR branches, releases and device saves were not changed.
+
+Before doing anything, fetch the latest branch and list its active/queued runs. This workflow push automatically starts one new build; do not immediately dispatch another or cancel other work. Monitor that newest run; if it fails, inspect the full failed-step log, fix the actual cause on this branch, complete portable checks before another workflow push, and repeat until the exact target artifact exists. Windows/WSL can run portable tests; the full app archive still requires macOS/Xcode.
+
+Success requires actual `bcd-0712-upstream-cloud-unsigned-ipa`, both IPA identities/version/source SHA, ZIP integrity, touch acceleration and Cloud migration binary markers, and Turing `[tc-exec-recheck]` in both FEX DLLs. `tools/verify-upstream-cloud-ipa.py` runs before upload. Report run/artifact links, actual source SHA, real tests and explicit skips; do not call a missing fixture a pass. Before device use, back up BOTH `wine/drive_c/users/mythic` and `mobile`; no automatic Cloud-conflict resolution or device-save changes.
+
+User asked about half-hour checks. This Codex environment cannot create a scheduled automation to watch one build through failure/completion; no new half-hour automation was created. Continue the authorized monitor/fix/rebuild work in the receiving chat and state actual background-execution limitations honestly. The earlier one-shot Windows resume schedule has already fired.
