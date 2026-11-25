@@ -34,6 +34,12 @@ jobs:
       - name: Check strict workflow command normalization
         run: python3 tests/host/check-workflow-commands.py
 
+      - name: Check exact OpenGL opt-in overlay guard
+        run: python3 tests/host/check-gl-optin-tree.py
+
+      - name: Check DXC and Wine opt-in build script syntax
+        run: bash -n tools/build-dxcompiler.sh && bash -n tools/build-wine-extra-dlls.sh
+
       - name: Check unsigned IPA publication contract before macOS
         run: python3 tests/host/check-ipa-workflow-contract.py
 
@@ -2837,6 +2843,33 @@ jobs:
           path: toolchains/llvm-mingw-20260421-ucrt-macos-universal
           key: llvm-mingw-20260421-ucrt-macos-universal
 
+      # madeira-bcd (round 663, item 7c): dxcompiler-optin.dll, the DirectX Shader Compiler for 64-bit programs (DXC 1.9.2609 from its
+      # tag, with build/dxc-win/0001-mingw-w64-build.patch; the C++ runtime linked in). Only build/dxc-win/out (the stripped DLL and its
+      # stamp, about 21 MB) is cached; a miss builds it (two host tablegen tools, then the DLL; an LLVM-sized job). The script ships the
+      # current DLL on a hit too. A failure only loses the DLL; the check below then names the list line and rule that want it.
+      - name: Restore dxcompiler.dll (DirectX Shader Compiler, x86-64)
+        id: dxccache
+        uses: actions/cache/restore@v4
+        with:
+          path: build/dxc-win/out
+          key: dxc-win-x64-v1-${{ hashFiles('build/dxc-win/0001-mingw-w64-build.patch', 'build/dxc-win/mingw-x86_64.cmake', 'tools/build-dxcompiler.sh') }}
+
+      - name: Build dxcompiler.dll and ship it as dxcompiler-optin.dll
+        if: env.MINGW_OK == '1'
+        continue-on-error: true
+        run: bash tools/build-dxcompiler.sh
+
+      - name: Save dxcompiler.dll
+        if: steps.dxccache.outputs.cache-hit != 'true' && hashFiles('build/dxc-win/out/dxcompiler.dll') != ''
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: build/dxc-win/out
+          key: dxc-win-x64-v1-${{ hashFiles('build/dxc-win/0001-mingw-w64-build.patch', 'build/dxc-win/mingw-x86_64.cmake', 'tools/build-dxcompiler.sh') }}
+
+      - name: Require the DXC opt-in payload before continuing
+        run: test -f app/Madeira/arm64ec-windows/dxcompiler-optin.dll
+
       # Bundle stock GC64 LuaJIT for LÖVE games and a second variant for
       # games whose Lua scripts use C-style comments. The loader selects the
       # variant for the session (build/wineserver/luajit_compat.c).
@@ -5458,30 +5491,6 @@ jobs:
       # handling of unrelated extra DLLs above. Do not ship another missing farm.
       - name: Verify Wine media reader DLLs
         run: python3 tools/check-wine-media-dlls.py app/Madeira/arm64ec-windows
-
-      # madeira-bcd (round 663, item 7c): dxcompiler-optin.dll, the DirectX Shader Compiler for 64-bit programs (DXC 1.9.2609 from its
-      # tag, with build/dxc-win/0001-mingw-w64-build.patch; the C++ runtime linked in). Only build/dxc-win/out (the stripped DLL and its
-      # stamp, about 21 MB) is cached; a miss builds it (two host tablegen tools, then the DLL; an LLVM-sized job). The script ships the
-      # current DLL on a hit too. A failure only loses the DLL; the check below then names the list line and rule that want it.
-      - name: Restore dxcompiler.dll (DirectX Shader Compiler, x86-64)
-        id: dxccache
-        uses: actions/cache/restore@v4
-        with:
-          path: build/dxc-win/out
-          key: dxc-win-x64-v1-${{ hashFiles('build/dxc-win/0001-mingw-w64-build.patch', 'build/dxc-win/mingw-x86_64.cmake', 'tools/build-dxcompiler.sh') }}
-
-      - name: Build dxcompiler.dll and ship it as dxcompiler-optin.dll
-        if: env.MINGW_OK == '1'
-        continue-on-error: true
-        run: bash tools/build-dxcompiler.sh
-
-      - name: Save dxcompiler.dll
-        if: steps.dxccache.outputs.cache-hit != 'true' && hashFiles('build/dxc-win/out/dxcompiler.dll') != ''
-        continue-on-error: true
-        uses: actions/cache/save@v4
-        with:
-          path: build/dxc-win/out
-          key: dxc-win-x64-v1-${{ hashFiles('build/dxc-win/0001-mingw-w64-build.patch', 'build/dxc-win/mingw-x86_64.cmake', 'tools/build-dxcompiler.sh') }}
 
       # M1-S10 (build 708): icuuc-optin.dll and icuin-optin.dll, ICU4C 78.3 (Unicode licence) built for ARM64EC from the release tarball in Debian's
       # archive (SHA-256 checked; tools/build-icu-optin.sh) for Qt 6 programs. Only build/icu-win/out (the two stripped DLLs and their stamp, about
