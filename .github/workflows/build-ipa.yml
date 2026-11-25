@@ -5527,9 +5527,10 @@ jobs:
       # Round 624 (agent E2 S3): the step that builds the opt-in DLLs may fail without failing the build; a DLL a game list or an
       # auto-tune rule names in env.MADEIRA_OPTIN_DLLS (Glyphica's kernelbase-optin.dll, build 624) must not go missing silently.
       - name: Verify the opt-in DLLs the lists and rules name
-        run: |
-          python3 tools/check-optin-dlls-shipped.py app/Madeira/arm64ec-windows
-          python3 tools/check-optin-shadowing.py app/Madeira/arm64ec-windows app/Madeira/aarch64-windows
+        run: python3 tools/check-optin-dlls-shipped.py app/Madeira/arm64ec-windows
+
+      - name: Verify complete opt-in DLL shadowing
+        run: python3 tools/check-optin-shadowing.py app/Madeira/arm64ec-windows app/Madeira/aarch64-windows
 
       - name: Save wine arm64ec build
         if: steps.wineeccache.outputs.cache-hit != 'true' && hashFiles('wine/build-arm64ec/dlls/msvcr80/arm64ec-windows/msvcr80.dll') != ''

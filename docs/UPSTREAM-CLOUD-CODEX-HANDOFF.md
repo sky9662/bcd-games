@@ -51,3 +51,7 @@ See [shared IPA infrastructure pending task](local-build/IPA-BUILD-RUNBOOK.md#pe
 ## Run #62 completed — next run
 
 DXC 1.9.2609 compiled, verified and cached; native VideoToolbox passed. Run #62 stopped before Wine extras at step 674 because early DXC made a partial DLL set look complete. See runbook/CI lessons. Preserve DXC cache and use explicit source-stage opt-in checks plus mandatory final DLL shadowing and named-DLL verification. New workflow push queues next run; do not dispatch twice. Pending shared infrastructure task remains blocked until verified IPA.
+
+## Run #63 completed — next run
+
+Both Linux jobs and native VideoToolbox passed. Run #63 stopped at step 91: the #62 fix changed the named opt-in DLL verification's exact YAML run command to a multiline block, violating the legacy kernelbase regression. Restore the original command and separate the mandatory shadowing step; early Linux workflow stage controls added. Preserve DXC cache and strict payload checks. New workflow push queues next run; no duplicate dispatch. Infrastructure follow-up remains blocked until verified IPA.

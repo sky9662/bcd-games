@@ -4,6 +4,7 @@
 import argparse
 from pathlib import Path
 import tempfile
+import re
 
 
 def validate(ec, aa):
@@ -37,6 +38,51 @@ def self_test():
     print('PASS: six strict opt-in shadowing controls (including DXC-only partial build)')
 
 
+def workflow_contract(text):
+    names = (
+        'Check opt-in DLLs',
+        'Build extra Wine DLLs for arm64ec',
+        'Build ICU and ship it as icuuc-optin.dll and icuin-optin.dll',
+        'Verify the opt-in DLLs the lists and rules name',
+        'Verify complete opt-in DLL shadowing',
+    )
+    blocks = []
+    for name in names:
+        marker = '      - name: ' + name + '\n'
+        if text.count(marker) != 1:
+            return False
+        start = text.index(marker)
+        end = text.find('\n      - name: ', start + len(marker))
+        blocks.append((start, text[start:] if end == -1 else text[start:end]))
+    if any(a[0] >= b[0] for a, b in zip(blocks, blocks[1:])):
+        return False
+    commands = (
+        'python3 tests/host/check-optin-dlls.py --source-only || python3 tools/ci-optional-fixture-check.py tests/host/check-optin-dlls.py --source-only',
+        'python3 tools/check-optin-dlls-shipped.py app/Madeira/arm64ec-windows',
+        'python3 tools/check-optin-shadowing.py app/Madeira/arm64ec-windows app/Madeira/aarch64-windows',
+    )
+    for index, command in zip((0, 3, 4), commands):
+        if '        run: ' + command not in blocks[index][1].splitlines():
+            return False
+    return all(not re.search(r'^        (?:if|continue-on-error):', blocks[i][1], re.M) for i in (3, 4))
+
+
+def workflow_self_test():
+    text = (Path(__file__).resolve().parents[1] / '.github/workflows/build-ipa.yml').read_text()
+    assert workflow_contract(text), 'staged opt-in workflow contract'
+    marker = '      - name: Verify complete opt-in DLL shadowing\n'
+    command = '        run: python3 tools/check-optin-dlls-shipped.py app/Madeira/arm64ec-windows'
+    mutations = (
+        text.replace(command, command.replace('run: ', 'run: |\n          '), 1),
+        text.replace(marker, marker + '        continue-on-error: true\n', 1),
+        text.replace(marker, '      - name: Removed shadowing verification\n', 1),
+        text.replace(marker, marker + '        if: false\n', 1),
+        text.replace('check-optin-dlls.py --source-only ||', 'check-optin-dlls.py ||', 1),
+    )
+    assert all(not workflow_contract(bad) for bad in mutations), 'workflow negative controls'
+    print('PASS: staged opt-in workflow and five negative controls')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('ec', nargs='?', type=Path)
@@ -45,6 +91,7 @@ def main():
     args = parser.parse_args()
     if args.self_test:
         self_test()
+        workflow_self_test()
         return 0
     if args.ec is None or args.aa is None:
         parser.error('both built DLL directories are required')
