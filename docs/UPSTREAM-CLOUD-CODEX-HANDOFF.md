@@ -47,3 +47,7 @@ Read the [permanent build runbook](local-build/IPA-BUILD-RUNBOOK.md) before all 
 ## Approved follow-up after verified IPA
 
 See [shared IPA infrastructure pending task](local-build/IPA-BUILD-RUNBOOK.md#pending-project-task--shared-ipa-infrastructure-user-approved-2026-11-25). Separate CI infrastructure from custom features only after the current IPA is verified; preserve independent PR branches and establish cross-branch Codex discovery. Do not merge branches or interrupt the active build for this task.
+
+## Run #62 completed — next run
+
+DXC 1.9.2609 compiled, verified and cached; native VideoToolbox passed. Run #62 stopped before Wine extras at step 674 because early DXC made a partial DLL set look complete. See runbook/CI lessons. Preserve DXC cache and use explicit source-stage opt-in checks plus mandatory final DLL shadowing and named-DLL verification. New workflow push queues next run; do not dispatch twice. Pending shared infrastructure task remains blocked until verified IPA.

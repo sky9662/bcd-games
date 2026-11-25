@@ -37,6 +37,9 @@ jobs:
       - name: Check exact OpenGL opt-in overlay guard
         run: python3 tests/host/check-gl-optin-tree.py
 
+      - name: Check strict opt-in shadowing on partial and complete DLL sets
+        run: python3 tools/check-optin-shadowing.py --self-test
+
       - name: Check DXC and Wine opt-in build script syntax
         run: bash -n tools/build-dxcompiler.sh && bash -n tools/build-wine-extra-dlls.sh
 
@@ -4732,7 +4735,8 @@ jobs:
 
       # madeira-bcd: env.MADEIRA_OPTIN_DLLS: dxva2, evr, xpsprint for the games that list them.
       - name: Check opt-in DLLs
-        run: python3 tests/host/check-optin-dlls.py || python3 tools/ci-optional-fixture-check.py tests/host/check-optin-dlls.py
+        # DXC ships early; Wine extra DLLs (including dcomp) are not built yet.
+        run: python3 tests/host/check-optin-dlls.py --source-only || python3 tools/ci-optional-fixture-check.py tests/host/check-optin-dlls.py --source-only
 
       # madeira-bcd: env.MADEIRA_OPTIN_DLLS = dxdiagn,ddraw: Wine's DxDiag provider for a 64-bit program, with the patch that lets
       # IDxDiagProvider::Initialize finish without DirectShow's device enumerator.
@@ -5523,7 +5527,9 @@ jobs:
       # Round 624 (agent E2 S3): the step that builds the opt-in DLLs may fail without failing the build; a DLL a game list or an
       # auto-tune rule names in env.MADEIRA_OPTIN_DLLS (Glyphica's kernelbase-optin.dll, build 624) must not go missing silently.
       - name: Verify the opt-in DLLs the lists and rules name
-        run: python3 tools/check-optin-dlls-shipped.py app/Madeira/arm64ec-windows
+        run: |
+          python3 tools/check-optin-dlls-shipped.py app/Madeira/arm64ec-windows
+          python3 tools/check-optin-shadowing.py app/Madeira/arm64ec-windows app/Madeira/aarch64-windows
 
       - name: Save wine arm64ec build
         if: steps.wineeccache.outputs.cache-hit != 'true' && hashFiles('wine/build-arm64ec/dlls/msvcr80/arm64ec-windows/msvcr80.dll') != ''

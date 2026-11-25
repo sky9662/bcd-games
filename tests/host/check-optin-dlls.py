@@ -21,6 +21,7 @@ from pathlib import Path
 import os
 import re
 import sys
+from runpy import run_path
 
 root = Path(__file__).resolve().parents[2]
 ok = True
@@ -87,10 +88,17 @@ else:
     print('skip the loader check (no Wine tree here; WINE_SRC names one)')
 ec_set = root / 'app/Madeira/arm64ec-windows'
 aa_set = root / 'app/Madeira/aarch64-windows'
-if any(ec_set.glob('*-optin.dll')) and any(aa_set.glob('*.dll')):
-    shadowed = sorted(f.name[:-10] for f in ec_set.glob('*-optin.dll')
-                      if (ec_set / (f.name[:-10] + '.dll')).exists() and not (aa_set / (f.name[:-10] + '.dll')).exists())
-    check('of the shipped opt-in DLLs only dcomp is shadowed that way (%s)' % shadowed, shadowed == ['dcomp'])
+# DXC can already be present in the early source-test stage, before Wine
+# extras are built. Only explicit source mode defers this payload assertion.
+# CI must run the strict standalone check on the finished DLL sets.
+if sys.argv[1:] == ['--source-only']:
+    print('DEFERRED: built DLL shadowing; mandatory post-build check runs without a fixture waiver')
+elif sys.argv[1:]:
+    sys.exit('usage: check-optin-dlls.py [--source-only]')
+elif any(ec_set.glob('*-optin.dll')) and any(aa_set.glob('*.dll')):
+    validate = run_path(str(root / 'tools/check-optin-shadowing.py'))['validate']
+    passed, detail = validate(ec_set, aa_set)
+    check(detail, passed)
 else:
     print('skip the shipped-set check (no built DLL sets in this tree)')
 check('it says what it linked, and what it could not', 'MADEIRA_OPTIN_DLLS: %s -> %s' in blk and

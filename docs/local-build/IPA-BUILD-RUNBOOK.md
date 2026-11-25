@@ -29,7 +29,7 @@ First fatal named step from actual Actions jobs; step numbers change as checks m
 | [59](https://github.com/sky9662/bcd-games/actions/runs/45532286385) | 773 FEX call/return elision | Squashed mirror lacks exact test baseline; restore canonical FEX/DXMT history without changing build HEAD; maintain final overlay order | Passed later #60 |
 | [60](https://github.com/sky9662/bcd-games/actions/runs/45542157073) | 819 mandatory opt-in DLLs | DXC HCT generated-header byte comparison failed with ambient formatter; pin clang-format 17.0.1 wheel/executable. Wine OpenGL guard incorrectly rejected its own exact NULL-sync overlay | Source guard passed #61; actual DXC/OpenGL DLL builds pending |
 | [61](https://github.com/sky9662/bcd-games/actions/runs/45591200543) | 11 VideoToolbox | Same 130 ms busy=0 assertion twice. Production samples backlog BEFORE copy wait/model. Insert bounded gate at actual serial queue head; require two genuine outstanding frames before release | #62 gate and full native harness passed |
-| [62](https://github.com/sky9662/bcd-games/actions/runs/45592898592) | In progress at review | No failure observed at snapshot | Not IPA success |
+| [62](https://github.com/sky9662/bcd-games/actions/runs/45592898592) | 674 opt-in DLL shadowing | Early DXC now triggers old partial-set heuristic before Wine extras/dcomp; explicit source-only stage and strict final built-set verification | DXC built/verified/cached; fix pending CI |
 
 ## Mandatory workflow for every future version
 
@@ -76,7 +76,7 @@ Use `--index` for staged bytes locally; CI checkout uses no flag. Run the queue 
 - After success, keep this runbook/lessons plus CI fixes in any future build branch. Ensure AGENTS.md and handoff point to them; if a future version starts from clean upstream, explicitly cherry-pick/rebase the documentation and independent CI fixes first. Do not depend on chat memory or task IDs to recover build knowledge.
 
 ## Follow-up register (not completed)
-- #62 final result, actual DXC/OpenGL payload proof, final IPA/artifact and device validation.
+- #62 DXC built/verified/cached; next run must prove corrected staged shadow check, actual OpenGL payload, final IPA/artifact and device validation.
 - Record per-component cache hit/miss and timings after a successful build; design a separate cheap preflight workflow if useful, without weakening the existing complete suite. Do not promise a fixed build duration; runner availability, cache misses and new upstream changes can introduce new issues.
 
 ## Pending project task — shared IPA infrastructure (user approved 2026-11-25)
@@ -92,3 +92,7 @@ Use `--index` for staged bytes locally; CI checkout uses no flag. Run the queue 
 - [ ] Document the canonical branch and reusable CI commit set, update handoff references, and establish a rule to record future failures in the shared infrastructure branch and selectively propagate fixes to relevant build branches. Keep old independent PRs until upstream accepts them; check upstream acceptance before dropping or replacing a patch.
 
 Acceptance: a new isolated feature can use the already proven build infrastructure without merging other features or requiring the user to explain old failures; separate PR diffs stay clean. No automatic upstream PR, main merge, release replacement or modification of real device saves. The current user request authorizes recording this follow-up, not premature restructuring or starting duplicate builds.
+
+## Run 62 — partial DLL set must not trigger final shadowing check
+
+[Run #62](https://github.com/sky9662/bcd-games/actions/runs/45592898592), source `a34d1b66671179cac73e094c0c484cd6a54fe4d3`, passed the native VideoToolbox gate and full harness, both Linux jobs, DXC 1.9.2609 with clang-format 17.0.1 (x86-64 PE/export/import validation, 20,700,672-byte DLL). DXC cache saved under `dxc-win-x64-v1-fc41befb5d40d13190879585e898d20cb1a6568c94354a77ee3c866b9604e426`; do not change its inputs or key. First fatal macOS step 674: `FAIL of the shipped opt-in DLLs only dcomp is shadowed that way ([])`, repeated on diagnostic retry. Early DXC build now makes the old heuristic any(*-optin.dll) true before Wine extras produce dcomp-optin.dll. No evidence that dcomp compilation failed: it had not run. Explicitly run only the source contract at that stage and defer only the shadow assertion to mandatory final built-set check after Wine extras and ICU, alongside the existing required-DLL check. Preserve exact ['dcomp'] assertion, fail missing sets, no fixture waiver for final payload. Six focused local Python controls (empty, DXC-only, expected dcomp, unexpected ARM64 dcomp, extra shadow, directory impostor) and py_compile passed for the new checker; full repository/native CI pending. OpenGL actual DLL build remains unverified; no IPA. No feature or cache-key changes. Future rule: never infer all artifacts ready from one earlier-produced artifact; use explicit build-stage contracts and mandatory post-build checks.
