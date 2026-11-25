@@ -27,7 +27,7 @@ static kern_return_t vti_test_timebase(mach_timebase_info_t info) {
 // Hold initial model readiness until the test has submitted its loading frames.
 // A slow host must not silently turn those frames into active-session frames.
 static _Atomic int g_vti_test_allow_start = 1;
-static _Atomic int g_vti_test_allow_process = 1;
+static _Atomic int g_vti_test_allow_copy = 1;
 
 // ---- what the block calls in winemetal_unix.c
 static volatile int g_madeira_vsync_mode = 0, g_madeira_panel_hz = 120;
@@ -185,7 +185,6 @@ static BOOL fake_vt_make(FakeVTProcessor *self, FakeVTParams *p, NSString **why)
 }
 - (BOOL)processWithParameters:(id)p error:(NSError **)e {
   NSString *why = nil;
-  while (!atomic_load(&g_vti_test_allow_process)) usleep(250);
   usleep((useconds_t)g_vt_process_ms * 1000);
   if (g_vt_fail > 0) { g_vt_fail--; why = @"a made-up failure"; }
   if (why || !fake_vt_make(self, p, &why)) {
@@ -225,7 +224,13 @@ static NSString *surface_name(IOSurfaceRef s, NSUInteger plane) {
 - (id)newCommandQueue { return [[FakeQueue alloc] init]; }
 @end
 @implementation FakeCommandBuffer (VTI)
-- (void)waitUntilCompleted { if (g_gpu_ms) usleep((useconds_t)g_gpu_ms * 1000); op(@"%@: waited for", self.name); }
+- (void)waitUntilCompleted {
+  // This is before the production worker samples outstanding/backlog. Blocking
+  // inside the fake model would be too late: it already decided to generate.
+  while (!atomic_load(&g_vti_test_allow_copy)) usleep(250);
+  if (g_gpu_ms) usleep((useconds_t)g_gpu_ms * 1000);
+  op(@"%@: waited for", self.name);
+}
 - (MTLCommandBufferStatus)status { return g_copy_error ? MTLCommandBufferStatusError : MTLCommandBufferStatusCompleted; }
 - (NSError *)error { return nil; }
 @end
@@ -403,15 +408,19 @@ int main(int argc, char **argv) {
       g_vt_process_ms = 120; reset_ops();
       // Hold the worker across the first two frames. Host oversleep must not
       // let a nominally 120 ms model finish before backpressure is tested.
-      atomic_store(&g_vti_test_allow_process, 0);
+      atomic_store(&g_vti_test_allow_copy, 0);
       { int legacy = g_legacy_presents, i; unsigned long long busy0 = atomic_load(&g_vti.skip_busy);
         for (i = 0; i < 6; i++) {
           frame_delay_us(33000); @autoreleasepool { game_frame(layer, q, 0, &tn); }
-          if (i == 1) atomic_store(&g_vti_test_allow_process, 1);
+          if (i == 1) atomic_store(&g_vti_test_allow_copy, 1);
         }
-        atomic_store(&g_vti_test_allow_process, 1);
-      expect(wait_idle() && g_legacy_presents == legacy && atomic_load(&g_vti.skip_busy) > busy0,
+        atomic_store(&g_vti_test_allow_copy, 1);
+        int drained = wait_idle();
+        unsigned long long busy_after = atomic_load(&g_vti.skip_busy);
+        int backpressure_ok = drained && g_legacy_presents == legacy && busy_after > busy0;
+        expect(backpressure_ok,
                "VideoToolbox takes 120 ms a pair at 30 FPS: frames that find the worker busy get no pictures, and none is presented behind its back");
+        if (!backpressure_ok) printf("     backpressure: drained=%d legacy=%d/%d busy=%llu/%llu\n", drained, g_legacy_presents, legacy, busy_after, busy0);
         expect(count_of(@": present drawable") >= 6 && !has(@"-> nil"), "every frame of the game still reached the screen"); }
       g_vt_process_ms = 2;
 
