@@ -256,9 +256,10 @@ int main(void) {
         if check("the script's block and hook lines compile on the host with the stand-ins", b.returncode == 0):
             for phase, what in ((0, "the key is not set"), (1, "the key without present-fx"), (2, "one picture: the whole life of a session"),
                                 (3, "three pictures, 4:2:0 buffers, an sRGB layer, MetalFX upscaling"), (4, "what VideoToolbox or the picture do not allow"),
-                                (5, "the device probe"), (3, "same assertions with 30 ms extra host delay per frame")):
+                                (5, "the device probe"), (3, "same assertions with 30 ms extra host delay per frame"),
+                                (2, "same assertions with 130 ms extra host delay per frame")):
                 env = os.environ.copy()
-                env["BCD_VTI_TEST_DELAY_US"] = "30000" if "extra host delay" in what else "0"
+                env["BCD_VTI_TEST_DELAY_US"] = "130000" if "130 ms" in what else "30000" if "extra host delay" in what else "0"
                 r = subprocess.run([str(t / "h"), str(phase)], env=env, capture_output=True, text=True, timeout=300)
                 print("\n".join(l for l in r.stdout.splitlines() if l.startswith(("ok  ", "FAIL", "     "))))
                 if r.returncode:
