@@ -172,8 +172,12 @@ jobs:
       - name: Check upstream Windows profile unification (temporary files only)
         run: python3 tests/host/check-profile-unification.py
 
+      # Validate the real serial-queue gate before the complete native harness.
+      - name: Check VideoToolbox worker queue gate
+        run: python3 tests/host/check-vt-interp-queue.py
+
       # Exercise controlled cadence, model readiness and worker backpressure before expensive builds;
-      # retain native iOS compilation, copy-completion barriers and host-delay regressions.
+      # retain native iOS compilation, queue barriers and host-delay regressions.
       - name: Check the VideoToolbox frame interpolation experiment
         run: python3 tests/host/check-vt-interp.py || python3 tools/ci-optional-fixture-check.py tests/host/check-vt-interp.py
 

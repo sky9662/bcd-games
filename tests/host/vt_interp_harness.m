@@ -19,6 +19,7 @@
 #include <mach/mach_time.h>
 #include <math.h>
 #include "vt_interp_clock.h"
+#include "vt_interp_queue_gate.h"
 
 static kern_return_t vti_test_timebase(mach_timebase_info_t info) {
   info->numer = info->denom = 1;
@@ -27,7 +28,6 @@ static kern_return_t vti_test_timebase(mach_timebase_info_t info) {
 // Hold initial model readiness until the test has submitted its loading frames.
 // A slow host must not silently turn those frames into active-session frames.
 static _Atomic int g_vti_test_allow_start = 1;
-static _Atomic int g_vti_test_allow_copy = 1;
 
 // ---- what the block calls in winemetal_unix.c
 static volatile int g_madeira_vsync_mode = 0, g_madeira_panel_hz = 120;
@@ -225,9 +225,6 @@ static NSString *surface_name(IOSurfaceRef s, NSUInteger plane) {
 @end
 @implementation FakeCommandBuffer (VTI)
 - (void)waitUntilCompleted {
-  // This is before the production worker samples outstanding/backlog. Blocking
-  // inside the fake model would be too late: it already decided to generate.
-  while (!atomic_load(&g_vti_test_allow_copy)) usleep(250);
   if (g_gpu_ms) usleep((useconds_t)g_gpu_ms * 1000);
   op(@"%@: waited for", self.name);
 }
@@ -406,16 +403,20 @@ int main(int argc, char **argv) {
       /* ---- a worker that is behind: the game's frames go on, in order, and no real drawable is taken beside it */
       frames(layer, q, 2, 33, 0);
       g_vt_process_ms = 120; reset_ops();
-      // Hold the worker across the first two frames. Host oversleep must not
-      // let a nominally 120 ms model finish before backpressure is tested.
-      atomic_store(&g_vti_test_allow_copy, 0);
+      // Block the serial queue before either job can sample backlog. A GPU
+      // copy or model gate is too late: madeira_vti_job decides n first.
+      dispatch_semaphore_t gate = vti_test_hold_worker(madeira_vti_queue());
       { int legacy = g_legacy_presents, i; unsigned long long busy0 = atomic_load(&g_vti.skip_busy);
         for (i = 0; i < 6; i++) {
           frame_delay_us(33000); @autoreleasepool { game_frame(layer, q, 0, &tn); }
-          if (i == 1) atomic_store(&g_vti_test_allow_copy, 1);
+          if (i == 1) {
+            expect(atomic_load(&g_vti.outstanding) == 2,
+                   "two genuine game frames queued before either worker job samples backlog");
+            dispatch_semaphore_signal(gate);
+          }
         }
-        atomic_store(&g_vti_test_allow_copy, 1);
         int drained = wait_idle();
+        if (drained) dispatch_release(gate);
         unsigned long long busy_after = atomic_load(&g_vti.skip_busy);
         int backpressure_ok = drained && g_legacy_presents == legacy && busy_after > busy0;
         expect(backpressure_ok,
