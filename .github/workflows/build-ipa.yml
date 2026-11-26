@@ -50,6 +50,9 @@ jobs:
       - name: Check unsigned IPA publication contract before macOS
         run: python3 tests/host/check-ipa-workflow-contract.py
 
+      - name: Check merged relative cursor and acceleration source before macOS
+        run: python3 tests/host/check-relative-cursor.py --self-test
+
       - name: Check Vulkan pacing with a controlled clock
         run: python3 tests/host/check-vk-fps-pacing.py
 
@@ -6463,6 +6466,14 @@ jobs:
       - name: Verify upstream Cloud IPA identities and preserved feature markers
         run: python3 tools/verify-upstream-cloud-ipa.py
 
+      - name: Rename verified unsigned IPAs to feature-labelled filenames
+        run: |
+          set -euo pipefail
+          test ! -e build-out/BCD-0.1.721-TCFix-ACC-Cloud.ipa
+          test ! -e build-out/BCD2-0.1.721-TCFix-ACC-Cloud.ipa
+          mv build-out/Madeira-0.1.721-unsigned.ipa build-out/BCD-0.1.721-TCFix-ACC-Cloud.ipa
+          mv build-out/Madeira2-0.1.721-unsigned.ipa build-out/BCD2-0.1.721-TCFix-ACC-Cloud.ipa
+
       # User's sideload test: preserve original BCD Bundle ID.
       # No upstream signing certificate, OTA secrets or bucket access.
       - name: Upload unsigned BCD 0.1.721 test IPAs
@@ -6470,8 +6481,8 @@ jobs:
         with:
           name: bcd-0721-turing-touch-cloud-unsigned-ipa
           path: |
-            build-out/Madeira-*-unsigned.ipa
-            build-out/Madeira2-*-unsigned.ipa
+            build-out/BCD-0.1.721-TCFix-ACC-Cloud.ipa
+            build-out/BCD2-0.1.721-TCFix-ACC-Cloud.ipa
           if-no-files-found: error
           retention-days: 14
 

@@ -129,3 +129,8 @@ Acceptance: a new isolated feature can use the already proven build infrastructu
 ## Run 65 — missing public documentation, not Steam functionality
 
 [Run #65](https://github.com/sky9662/bcd-games/actions/runs/45633943883), source `f168b0d1bb3a3b994ee93b574cc60ae1bf274da7`: both Linux jobs passed; macOS reached step 896 of 920 named steps, 859 successful including #64 FEX lean (887), opt-in source (674), named DLLs (821, all 44), shadowing (822, exactly dcomp), and actual OpenGL DLL build. DXC cache restored. Only `docs/STEAM_DESKTOP.md describes it` failed twice; native functional and wiring assertions passed. This exact document is absent in the public tree. Keep all six terms when present and strict missing-file failure by default; explicit public-export mode allows only this absent untracked document. Tracked missing, malformed, directory, symlink or Git error remain fatal. Standalone checker with eight controls and actual checkout check early in Linux, full Steam test uses same checker with step-scoped env and original command. Next X-Plane, Dock census and clipboard tests reviewed for similar missing-document assertions; none seen. No production or cache-key changes. New checker awaits CI execution; no claim of local execution. Remaining farm/OpenGL/Vulkan/archive/package/IPA checks pending. No IPA yet.
+
+
+## 0.1.721 Run 68
+
+See CI-LESSONS.md for full evidence and fix: first fatal step 875, stale exact sensitivity-expression anchor in new upstream Mouse-look source check after touch acceleration integration. Both Linux jobs passed; macOS 867 successful of 931 listed. Preserve functional checks and run the merged source check with negative controls in early Linux. CI validation pending; no IPA yet. Keep 0.1.712 successful baseline intact.

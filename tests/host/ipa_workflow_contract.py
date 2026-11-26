@@ -16,6 +16,13 @@ def check_publication_workflow(workflow, *, unsigned=False):
     upload = workflow[workflow.index("      - name: Upload unsigned BCD 0.1.721 test IPAs"):]
     assert "uses: actions/upload-artifact@v4" in upload
     assert "name: bcd-0721-turing-touch-cloud-unsigned-ipa" in upload
-    assert "build-out/Madeira-*-unsigned.ipa" in upload
-    assert "build-out/Madeira2-*-unsigned.ipa" in upload
+    assert "build-out/BCD-0.1.721-TCFix-ACC-Cloud.ipa" in upload
+    assert "build-out/BCD2-0.1.721-TCFix-ACC-Cloud.ipa" in upload
+    verify = workflow.index("run: python3 tools/verify-upstream-cloud-ipa.py")
+    rename = workflow.index("      - name: Rename verified unsigned IPAs to feature-labelled filenames")
+    publish = workflow.index("      - name: Upload unsigned BCD 0.1.721 test IPAs")
+    assert verify < rename < publish
+    stage = workflow[rename:publish]
+    assert "mv build-out/Madeira-0.1.721-unsigned.ipa build-out/BCD-0.1.721-TCFix-ACC-Cloud.ipa" in stage
+    assert "mv build-out/Madeira2-0.1.721-unsigned.ipa build-out/BCD2-0.1.721-TCFix-ACC-Cloud.ipa" in stage
     assert "if-no-files-found: error" in upload

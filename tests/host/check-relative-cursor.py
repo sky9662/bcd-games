@@ -32,13 +32,40 @@ require('static let relativeCursorEnabled = directCursorEnabled && flag("MADEIRA
         "the switch is default off (only 1 turns it on) and needs the drawn cursor")
 require("&& mouseFocused && shown && (!InputSettings.shared.relative || Self.relativeCursorEnabled)\n" in hw,
         "the drawn cursor shows in Mouse-look only with the switch, and only while the program shows its cursor")
-branch = cv[cv.index("        if InputSettings.shared.relative {\n            let sens = CGFloat(InputSettings.shared.sensRel)"):]
-branch = branch[:branch.index("            return\n        }\n")]
-require("winios_pointer(ix, iy, F_MOVE, 0)\n" in branch
-        and "if !desktopMode && HardwareInput.relativeCursorEnabled { HardwareInput.shared.stickMoved() }" in branch
-        and branch.index("winios_pointer(ix, iy, F_MOVE, 0)") < branch.index("stickMoved()")
-        and "if ix != 0 || iy != 0 {" in branch,
+# The custom acceleration integration changes the sensitivity expression, not
+# the relative cursor contract. Identify the branch by its actual condition
+# and carry calculation; require one candidate and keep the guarded ordering.
+def relative_move_ok(source):
+    import re
+    candidates = re.findall(r"(?m)^        if InputSettings\.shared\.relative \{\n(.*?)(?=^        \})", source, re.S | re.M)
+    candidates = [b for b in candidates if "relCarryX += dx * sens" in b and "relCarryY += dy * sens" in b]
+    if len(candidates) != 1:
+        return False
+    branch = candidates[0]
+    # A nonzero motion must enclose both calls; cursor follows only after the
+    # relative motion and only in the opted-in non-desktop case.
+    return re.search(
+        r"(?m)^            if ix != 0 \|\| iy != 0 \{\n"
+        r"                winios_pointer\(ix, iy, F_MOVE, 0\)\n"
+        r"(?:                //[^\n]*\n)*"
+        r"                if !desktopMode && HardwareInput\.relativeCursorEnabled \{ HardwareInput\.shared\.stickMoved\(\) \}\n"
+        r"            \}\n            return\n$",
+        branch,
+    ) is not None
+
+require(relative_move_ok(cv),
         "the finger's relative move is sent as before, then (switch on, not a desktop session) the cursor follows Wine's")
+if "--self-test" in sys.argv:
+    # Mutate the real checkout; no synthetic success or skipped assertions.
+    for before, after in (
+        ("if !desktopMode && HardwareInput.relativeCursorEnabled { HardwareInput.shared.stickMoved() }",
+         "HardwareInput.shared.stickMoved()"),
+        ("if ix != 0 || iy != 0 {", "if ix == 0 && iy == 0 {"),
+        ("winios_pointer(ix, iy, F_MOVE, 0)", "winios_pointer(ix, iy, F_MOVE | F_ABS, 0)"),
+        ("relCarryX += dx * sens", "relCarryX += dx"),
+    ):
+        require(before in cv and not relative_move_ok(cv.replace(before, after)),
+                "negative control rejects " + after)
 require(hw.count("relativeCursorEnabled") == 2 and cv.count("relativeCursorEnabled") == 1,
         "the switch is read in those two places only")
 require("if InputSettings.shared.relative { return false }" in hw

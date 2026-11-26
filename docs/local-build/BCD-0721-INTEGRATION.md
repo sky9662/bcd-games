@@ -7,3 +7,8 @@ Three-way tree integration: all upstream-only entries remain at 0.1.721; all cus
 Required before reporting success: read AGENTS.md, IPA-BUILD-RUNBOOK.md, CI-LESSONS.md, CROSS-BRANCH-BUILDS.md; run portable and native preflight, review new overlay composition/cache inputs, verify new iOS SDK/weak imports, run profile, remotecache, FEX and touch regression tests; verify both actual unsigned IPA payloads and source SHA. No device test yet. Back up both Wine profiles before starting; do not automatically resolve Cloud conflicts. Shared infrastructure candidate is undergoing separate CI; no claim that its extraction is verified. No main/PR/release changes. GitHub connector tree merge is static evidence only; full checkout/local commands have not run in this environment.
 
 Target branch: feature/bcd-0721-turing-touch-cloud-ipa; artifact: bcd-0721-turing-touch-cloud-unsigned-ipa. Follow the new run if queued; no duplicate dispatch. Record each failure and confirmed fix in CI-LESSONS.md and the runbook; retain historical evidence. The older handoff remains archival, not the build target.
+
+
+## 0.1.721 Run 68
+
+See CI-LESSONS.md for full evidence and fix: first fatal step 875, stale exact sensitivity-expression anchor in new upstream Mouse-look source check after touch acceleration integration. Both Linux jobs passed; macOS 867 successful of 931 listed. Preserve functional checks and run the merged source check with negative controls in early Linux. CI validation pending; no IPA yet. Keep 0.1.712 successful baseline intact.
