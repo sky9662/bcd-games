@@ -35,6 +35,7 @@ import socket
 import struct
 import subprocess
 import sys
+from runpy import run_path
 import tempfile
 import threading
 import time
@@ -749,9 +750,12 @@ gen = (root / 'build/tools/gen-config-catalog.py').read_text()
 catalog = (app / 'ConfigCatalog.generated.swift').read_text()
 check('the catalog explains the session flag as one BCD sets itself', '"env.MADEIRA_STEAM_DESKTOP_SESSION":' in gen
       and 'key: "env.MADEIRA_STEAM_DESKTOP_SESSION"' in catalog)
-doc = root / 'docs/STEAM_DESKTOP.md'
-check('docs/STEAM_DESKTOP.md describes it', doc.exists() and all(word in doc.read_text() for word in
-      ('Steam for Windows', 'Steam Desktop', 'steam_client_win64', 'MADEIRA_STEAM_DESKTOP_SESSION', '[steam-desktop]', 'pool = 1152')))
+doc_verdict = run_path(str(root / 'tools/check-steam-desktop-doc.py'))['verdict'](
+    root, public_source=os.environ.get('BCD_STEAM_DESKTOP_PUBLIC_SOURCE') == '1')
+if doc_verdict == 'skip':
+    print('SKIP: documentation assertion only: public export omits untracked docs/STEAM_DESKTOP.md; all functional checks still run')
+else:
+    check('docs/STEAM_DESKTOP.md describes it', doc_verdict == 'pass')
 check('CI runs this check', 'python3 tests/host/check-steam-desktop.py' in (root / '.github/workflows/build-ipa.yml').read_text())
 
 if failed:

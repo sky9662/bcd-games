@@ -37,7 +37,9 @@ spec = importlib.util.spec_from_file_location("pointident", root / "tools/patch-
 P = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(P)
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 step = wf.index("      - name: Patch wine vkd3d-shader to read point as a name\n")
 check("CI runs this check and applies the patch before the i386 farm is built",
       "python3 tests/host/check-vkd3d-point-ident.py\n          python3 tools/patch-wine-vkd3d-point-ident.py wine\n" in wf[step:step + 400]

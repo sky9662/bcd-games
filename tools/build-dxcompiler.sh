@@ -79,13 +79,22 @@ fi
 # A no-op once they are there.
 git -C "$SRC" submodule update -q --init --depth 1 external/DirectX-Headers external/SPIRV-Headers external/SPIRV-Tools
 
+# DXC's own pinned formatting CI uses clang-format 17.0.1. A newer ambient formatter changes generated HCT bytes.
+# Isolate the tool to DXC; keep CMake's generate-and-compare checks on. The macOS universal2 wheel is hash-pinned.
+python3 -m venv "$WORK/format-venv"
+printf '%s\n' 'clang-format==17.0.1 --hash=sha256:88b84ef2255a95b4e4aeaf3c207f4f7521e821b6988e91948318ce5ce4665670' > "$WORK/clang-format-requirements.txt"
+"$WORK/format-venv/bin/python" -m pip install --require-hashes --only-binary=:all: --no-deps -r "$WORK/clang-format-requirements.txt"
+FORMAT="$WORK/format-venv/bin/clang-format"
+"$FORMAT" --version | grep -E '(^| )17\.0\.1( |$)'
+
 # 2. The two tablegen tools for the Mac itself (the cross build runs them).
 COMMON=(-G Ninja -C "$SRC/cmake/caches/PredefinedParams.cmake" -DCMAKE_BUILD_TYPE=Release
+        -DCLANG_FORMAT_EXE="$FORMAT"
         -DHLSL_INCLUDE_TESTS=OFF -DENABLE_SPIRV_CODEGEN=OFF -DSPIRV_BUILD_TESTS=OFF -DLLVM_INCLUDE_TESTS=OFF -DCLANG_INCLUDE_TESTS=OFF
         -DLLVM_BUILD_TESTS=OFF -DLLVM_APPEND_VC_REV=OFF -DLLVM_ENABLE_ASSERTIONS=OFF -DHLSL_BUILD_DXILCONV=OFF)
 cmake -S "$SRC" -B "$WORK/host" "${COMMON[@]}" -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
     > "$WORK/host-configure.log" 2>&1 || { tail -30 "$WORK/host-configure.log"; exit 1; }
-ninja -C "$WORK/host" -j"$JOBS" llvm-tblgen clang-tblgen > "$WORK/host-build.log" 2>&1 || { tail -30 "$WORK/host-build.log"; exit 1; }
+ninja -C "$WORK/host" -j"$JOBS" llvm-tblgen clang-tblgen > "$WORK/host-build.log" 2>&1 || { tail -100 "$WORK/host-build.log"; exit 1; }
 
 # 3. dxcompiler.dll for x86-64 Windows: no SPIR-V, no tests, no DXBC converter; the C++ runtime linked in.
 # -ffile-prefix-map: the compiler's __FILE__ strings (LLVM's asserts and unreachable messages) name the source files; they say "dxc/..."
@@ -95,7 +104,7 @@ MINGW_BIN="$MINGW" cmake -S "$SRC" -B "$WORK/x64" "${COMMON[@]}" -DCMAKE_TOOLCHA
     -DLLVM_TABLEGEN="$WORK/host/bin/llvm-tblgen" -DCLANG_TABLEGEN="$WORK/host/bin/clang-tblgen" \
     -DCMAKE_C_FLAGS="$MAPS" -DCMAKE_CXX_FLAGS="$MAPS" -DCMAKE_SHARED_LINKER_FLAGS="-static -Wl,--gc-sections" \
     > "$WORK/x64-configure.log" 2>&1 || { tail -30 "$WORK/x64-configure.log"; exit 1; }
-ninja -C "$WORK/x64" -j"$JOBS" dxcompiler > "$WORK/x64-build.log" 2>&1 || { tail -30 "$WORK/x64-build.log"; exit 1; }
+ninja -C "$WORK/x64" -j"$JOBS" dxcompiler > "$WORK/x64-build.log" 2>&1 || { tail -100 "$WORK/x64-build.log"; exit 1; }
 
 mkdir -p "$OUT"
 rm -f "$OUT/stamp"

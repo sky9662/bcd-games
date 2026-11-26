@@ -31,7 +31,9 @@ def check(what, cond, detail=""):
     ok = ok and bool(cond)
 
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 check("CI runs this check and then the patch, before the wineserver is built",
       "python3 tests/host/check-wineserver-object-open-trace.py\n          python3 tools/patch-wineserver-object-open-trace.py wine" in wf
       and wf.index("python3 tools/patch-wineserver-object-open-trace.py wine") < wf.index("bash build/wineserver/build.sh"))

@@ -25,7 +25,9 @@ script = R / "tools/patch-wine-dinput-cdecl-callbacks.py"
 wine = next((c for c in (R / "wine", Path(os.environ.get("WINE_SRC", "/nonexistent")), Path.home() / "madeira-bcd/wine")
              if (c / "dlls/dinput/ansi.c").is_file() and (c / ".git").exists()), None)
 FILES = ["dlls/dinput/dinput_private.h", "dlls/dinput/dinput.c", "dlls/dinput/ansi.c", "dlls/dinput/device.c", "dlls/dinput/joystick_hid.c"]
-wf = (R / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((R / ".github/workflows/build-ipa.yml").read_text())
 check("CI applies it for the i386 farm, after this check, and puts dlls/dinput back with the farm-only files",
       "python3 tests/host/check-dinput-cdecl-callbacks.py\n          python3 tools/patch-wine-dinput-cdecl-callbacks.py wine" in wf
       and "git -C wine checkout -- dlls/dinput" in wf

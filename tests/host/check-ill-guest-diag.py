@@ -216,7 +216,9 @@ else:
             check('every line carries the prefix', all(l.startswith('[ill-guest]') for l in run('same').stderr.splitlines()))
 
 # ---------------------------------------------------------------- 3. iOS compile, CI
-ci = (root / '.github/workflows/build-ipa.yml').read_text()
+from workflow_commands import workflow_commands
+
+ci = workflow_commands((root / '.github/workflows/build-ipa.yml').read_text())
 check('build-ipa.yml runs this check', 'python3 tests/host/check-ill-guest-diag.py' in ci and ci.count('check-ill-guest-diag.py') == 1)
 
 wine = Path(os.environ.get('WINE_SRC', root / 'wine'))

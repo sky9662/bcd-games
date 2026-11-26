@@ -139,7 +139,7 @@ fi
 # opengl32 with the default image base for everything but x86 (dlls/opengl32/Makefile.in; the shipped arm64ec-windows/opengl32.dll is based at
 # 0x7a800000, an emulated sub-floor window where its thunks lose the TEB). Only a game whose gl-backend key is on runs it: WineProcessBridge.m
 # adds opengl32 to MADEIRA_OPTIN_DLLS and links it as opengl32.dll for that session; every other game keeps the shipped file byte for byte. Built
-# only from a tree that has the fork's change (unix_private.h's ios_wow_host_ptr) and no uncommitted opengl32 edit; verified by
+# only from a tree that has the fork's change (unix_private.h's ios_wow_host_ptr) and only the exact CI NULL-sync overlay (or pristine pin); verified by
 # tools/verify-opengl32-optin.py before it ships. MADEIRA_OPENGL32_BUILD=0 skips it.
 OGL=""
 if [ "${MADEIRA_OPENGL32_BUILD:-1}" != 0 ] && [ -f "$R/wine/dlls/opengl32/unix_wgl.c" ] && [ -f "$SHIP/opengl32.dll" ]; then
@@ -520,13 +520,13 @@ if [ -n "$KUD" ]; then
     rm -f "$k32" "$B"/dlls/kernel32/arm64ec-windows/*.o
 fi
 # madeira-bcd (OpenGL): opengl32-optin.dll (see OGL above), from the restored tree. Only from an opengl32 the pin left as it is and that has the
-# fork's change; stripped like the kernelbase variant and padded to at least SizeOfImage + 0x10000 like the other extra DLLs; verified (the
+# fork's change plus at most the exact CI NULL-sync overlay; stripped like the kernelbase variant and padded to at least SizeOfImage + 0x10000 like the other extra DLLs; verified (the
 # shipped DLL's machine and exports, not based at 0x7a800000) before it ships. Its delay import of glu32 stays, as in the shipped file. The
 # objects are removed afterwards (wine/build-arm64ec is cached).
 if [ -n "$OGL" ]; then
     og="$B/dlls/opengl32/arm64ec-windows/opengl32.dll"
     og_tmp="$SHIP/opengl32-optin.dll.tmp"
-    if git -C "$R/wine" diff --quiet -- dlls/opengl32 && grep -q "ios_wow_host_ptr" "$R/wine/dlls/opengl32/unix_private.h"; then
+    if python3 "$R/tools/check-wine-gl-optin-tree.py" "$R/wine"; then
         rm -f "$og" "$B"/dlls/opengl32/arm64ec-windows/*.o
         make -C "$B" -j"$JOBS" dlls/opengl32/arm64ec-windows/opengl32.dll > "$B.opengl32.log" 2>&1
         if [ -f "$og" ] && cp "$og" "$og_tmp" && "$MINGW/arm64ec-w64-mingw32-strip" --strip-debug "$og_tmp"; then

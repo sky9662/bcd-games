@@ -259,6 +259,11 @@ python3 "$R/tools/patch-fex-ios-repne-bit-ops.py" "$R/FEX" || echo "::warning::t
 # suspend doorbell test (the callee's own entry point, or ExitFunctionEC, tested it on the way): two instructions fewer per call return. Default off:
 # every entry point is emitted as before. Last, so its anchors are the other overlays' output.
 python3 "$R/tools/patch-fex-ios-callret-lean.py" "$R/FEX" || echo "::warning::the lean call return was not applied (FEX anchor changed); xtajit64.dll is built without it"
+# Turing Complete: opt-in executable SEC_COMMIT section recheck (off by default).
+# Validate the pinned FEX anchor, then patch the temporary build tree before linking.
+python3 "$R/tests/host/check-turing-exec-recheck.py"
+python3 "$R/tools/patch-fex-ios-exec-recheck.py" "$R/FEX/Source/Windows/Common/InvalidationTracker.cpp"
+# The independent recheck precedes the final ARM64EC exit overlay.
 # Opt-in, whichever pin (round 670; the owner's yes of 2026-11-18 to the engine review's I10): MADEIRA_FEX_EC_EXIT_POOL=1 installs
 # ExitFunctionECJitPool, the lean JIT exit with a per-thread hint for targets that are already pool addresses (method tables of an
 # image's pool copy), which ExitFunctionECJit walks the whole alias table for. Last, after every overlay that touches Module.cpp.

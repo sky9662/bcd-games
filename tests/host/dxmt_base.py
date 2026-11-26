@@ -13,6 +13,7 @@ from pathlib import Path
 import subprocess
 
 OVERLAY_BASE = 'db546ee466ad50ec6463edb5fa183de11db43761'
+BASELINE_REMOTE = 'https://github.com/3Shain/dxmt.git'
 PIN_MARKER = 'madeira_rp_lean_on'   # willfaust/dxmt#26, in the wave's pin and later
 
 
@@ -23,5 +24,5 @@ def rev(dxmt):
         return 'HEAD'
     have = subprocess.run(['git', '-C', str(dxmt), 'cat-file', '-e', OVERLAY_BASE + '^{commit}'], capture_output=True)
     if have.returncode:
-        subprocess.run(['git', '-C', str(dxmt), 'fetch', '-q', '--depth=1', 'origin', OVERLAY_BASE], check=True)
+        subprocess.run(['git', '-C', str(dxmt), 'fetch', '-q', '--depth=1', BASELINE_REMOTE, OVERLAY_BASE], check=True)
     return OVERLAY_BASE

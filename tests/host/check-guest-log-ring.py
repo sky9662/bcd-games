@@ -37,7 +37,9 @@ rp = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(rp)
 ring = root / 'tools/patch-wine-guest-log-ring.py'
 
-wf = (root / '.github/workflows/build-ipa.yml').read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / '.github/workflows/build-ipa.yml').read_text())
 step = 'python3 tools/patch-wine-guest-log-ring.py wine/dlls/ntdll/unix/file.c'
 check('the workflow checks it and applies it right after the sign-in-value script, before the file trace',
       'python3 tests/host/check-guest-log-ring.py\n          ' + step in wf

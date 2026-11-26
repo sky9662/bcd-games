@@ -431,7 +431,9 @@ check("build script refuses a result that lacks the patch it applied, and an unp
       and 'PIN_RINGS=0; grep -qF "[small-rings] madeira-bcd" "$D/src/dxmt/dxmt_ring_bump_allocator.hpp" && PIN_RINGS=1' in sh)
 check("the marker the build greps is the one the patch logs",
       'WARN("[small-rings] madeira-bcd: ", exe,' in patch_mod.HELPERS)
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 chain = re.findall(r"python3 (tools/patch-(?:dxmt|airconv|winemetal)-[\w.-]+\.py)", wf)
 check("the script is not in the workflow's in-place DXMT patch chain nor in the i386 farm cache key",
       "tools/patch-d3d11-src-small-rings.py" not in chain

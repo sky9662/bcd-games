@@ -46,7 +46,9 @@ spec.loader.exec_module(sp)
 chain = ['patch-wine-guest-log', 'patch-wine-guest-log-tag', 'patch-wine-guest-log-service', 'patch-wine-guest-log-renpy',
          'patch-wine-guest-log-trace', 'patch-wine-guest-log-redact']
 secrets = root / 'tools/patch-wine-guest-log-secrets.py'
-wf = (root / '.github/workflows/build-ipa.yml').read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / '.github/workflows/build-ipa.yml').read_text())
 step = 'python3 tools/patch-wine-guest-log-secrets.py wine/dlls/ntdll/unix/file.c'
 check('the workflow checks it and applies it right after the account-name patch',
       'python3 tests/host/check-guest-log-secrets.py\n          ' + step in wf

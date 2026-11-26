@@ -45,7 +45,7 @@ def require(cond, label):
 
 cloud = (APP / "SteamCloud.swift").read_text()
 owned = (APP / "SteamOwnedLibrary.swift").read_text()
-compare = cloud[cloud.index("// MARK: - Where a cloud path lives in the Wine prefix"):cloud.index("// MARK: - Download")]
+compare = cloud[cloud.index("// MARK: - Where a cloud path lives in the Wine prefix"):cloud.index("// MARK: - One Windows profile per prefix")] + cloud[cloud.index("// MARK: - Comparison"):cloud.index("// MARK: - Download")]
 remote = cloud[cloud.index("// MARK: - Valve's client's file list"):cloud.index("// MARK: - What to do with a comparison")]
 plan = cloud[cloud.index("// MARK: - What to do with a comparison"):cloud.index("// MARK: - Upload")]
 

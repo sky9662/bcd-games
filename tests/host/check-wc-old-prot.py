@@ -261,7 +261,9 @@ catalog = (root / 'app/Madeira/ConfigCatalog.generated.swift').read_text()
 check('the config catalog (generator and generated Swift) has the entry, default off, with its sources',
       '"env.MADEIRA_PROTECT_WRITECOPY_AS_RW"' in gen_cat and '"sources": ["build/ntdll-unix/ios_wc_old_prot.h", "build/ntdll-unix/virtual_ios.c"]' in gen_cat
       and 'ConfigOption(key: "env.MADEIRA_PROTECT_WRITECOPY_AS_RW", title: "A written data page reports PAGE_READWRITE when write-protected", kind: .bool, defaultValue: "0"' in catalog)
-ci = (root / '.github/workflows/build-ipa.yml').read_text()
+from workflow_commands import workflow_commands
+
+ci = workflow_commands((root / '.github/workflows/build-ipa.yml').read_text())
 check('build-ipa.yml runs this check', 'python3 tests/host/check-wc-old-prot.py' in ci and ci.count('check-wc-old-prot.py') == 1)
 
 # the real file still compiles for iOS (when the wine headers exist)

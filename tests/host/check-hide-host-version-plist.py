@@ -29,7 +29,9 @@ def check(what, cond, detail=""):
     ok = ok and bool(cond)
 
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 check("the workflow runs this check and applies the patch after the other file.c patches",
       "python3 tests/host/check-hide-host-version-plist.py\n          python3 tools/patch-wine-hide-host-version-plist.py wine/dlls/ntdll/unix/file.c" in wf
       and wf.index("tools/patch-wine-file-info-fstat.py wine/dlls") < wf.index("tools/patch-wine-hide-host-version-plist.py wine/dlls")

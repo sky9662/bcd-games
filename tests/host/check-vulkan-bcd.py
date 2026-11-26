@@ -14,6 +14,7 @@ session is what it was. Checks:
   - CI: Madeira's Wine change is written before win32u is built, the DLLs are built and verified, the tests run, the unix table is checked;
   - tools/patch-wine-vulkan-suboptimal.py on a copy of Wine's win32u/vulkan.c (when the wine tree is there): applies once, then only says so.
 """
+import argparse
 import os
 import re
 import shutil
@@ -23,6 +24,10 @@ import tempfile
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[2]
+cli = argparse.ArgumentParser(description=__doc__)
+cli.add_argument('--public-source', action='store_true',
+                 help='report an absent, untracked public-export README as a documentation skip only')
+args = cli.parse_args()
 ok = True
 
 
@@ -103,9 +108,19 @@ check("a Vulkan present counts as a frame for the front end: one atomic add, not
 
 ignore = (root / ".gitignore").read_text()
 pbx = (root / "app/Madeira.xcodeproj/project.pbxproj").read_text()
-check("the DLL folder is ignored, the folder's README is tracked, and the app bundles the vulkan folder",
-      "app/Madeira/vulkan/arm64ec-windows/" in ignore and (root / "app/Madeira/vulkan/README.md").is_file()
+check("the DLL folder is ignored and the app bundles the vulkan folder",
+      "app/Madeira/vulkan/arm64ec-windows/" in ignore
       and "A1000707 /* vulkan in Resources */" in pbx and 'A2000707 /* vulkan */ = {isa = PBXFileReference; lastKnownFileType = folder; path = vulkan;' in pbx)
+readme = root / 'app/Madeira/vulkan/README.md'
+public_omission = False
+if args.public_source and not readme.is_file():
+    tracked = subprocess.run(['git', 'ls-files', '--error-unmatch', '--', readme.relative_to(root).as_posix()],
+                             cwd=root, capture_output=True)
+    public_omission = tracked.returncode == 1
+if public_omission:
+    print('SKIP: documentation assertion only: public export omits untracked app/Madeira/vulkan/README.md; all functional and packaging checks still run')
+else:
+    check("the Vulkan folder's documentation is present", readme.is_file())
 
 ci = (root / ".github/workflows/build-ipa.yml").read_text()
 patch_step = ci.find("python3 tools/patch-wine-vulkan-suboptimal.py")
