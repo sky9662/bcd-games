@@ -1,3 +1,17 @@
+## Verified successful baseline — Run 66 (2026-11-26 Taipei)
+
+**Build completed; do not restart this target just to monitor it. Device validation remains pending.** [Run #66](https://github.com/sky9662/bcd-games/actions/runs/45652561853), build source `2fa14a0b1fcdd983f51897ff425e5f2c2ecdf917`, both Linux jobs and macOS build succeeded; 880 successful main-job steps, zero failed, 920 listed steps including conditional skips. Started 2026-11-25 16:19:06 UTC, completed 18:07:31 UTC. [Actual artifact 15049313063](https://github.com/sky9662/bcd-games/actions/runs/45652561853/artifacts/15049313063), `bcd-0712-upstream-cloud-unsigned-ipa`, 469103728 bytes, ZIP digest `3ab04f6ed4ed30c1fd98c5de44037c703680c756e99b232dd00e86cc523c97f0`, expires 2026-12-09 18:07:07 UTC. [Build logs artifact](https://github.com/sky9662/bcd-games/actions/runs/45652561853/artifacts/15049468767). Download and retain the actual artifact before expiry. A docs-only commit recording this result does not change the build source SHA.
+
+- `Madeira-0.1.712-unsigned.ipa`, `com.thebcd69.bcd`, SHA256 `a019a9608e56bbd06ffc8e7fd83125a035ad7a46493495937db62ba271881415`.
+- `Madeira2-0.1.712-unsigned.ipa`, `com.thebcd69.bcd2`, SHA256 `7e837a019155b83322eb5b511dae8aac501351d77ad534453a095a29d66b1733`.
+- Step 915 ran the actual verifier: ZIP CRC, bundle IDs, 0.1.712, MadeiraCommit matching source SHA, BCDTouchAcceleration, [profile] one Windows profile, [tc-exec-recheck] in both xtajit64.dll and xtajit64-avx.dll. Both passed before upload. This is CI evidence, not independent downloaded-byte or physical-device testing.
+- Explicit omissions in macOS log: 14 host tests stopped at optional absent fixtures (itch, ea, cluster-logs, steam-cm-transport, system32-x86-tools, external-storage, kk-lsfg, vulkan-wow64, kk-snorm-blend, kk-msl-fail, kk-ms-store-drop, moltenvk-patched, vcruntime-mfc, vcruntime-sources); do not report these as passes. Two narrower document-only exceptions (Vulkan README, Steam Desktop) preserve functional checks. Nonfatal warnings include source-built dxgi/d3d11 differing from upstream committed binaries, expected patched FEX rebuild difference and opengl32-optin.dll delay-import gap for glu32.dll; retain warnings for review, do not silently declare all runtime features validated.
+- Cache restore confirmed in logs for native Wine, GnuTLS, FFmpeg, OpenGL libs, KosmicKrisp, MoltenVK, llvm-mingw, DXC (original hash key), LuaJIT, FEX iOS/ARM64EC/WOW64, LLVM 15 iOS, i386 farm, Wine ARM64EC and ICU. Preserve pins and independent changes. This successful SHA is the new reference for future builds; previous baseline remains historical.
+- Install only the intended identity via existing signing method, enable JIT as needed, back up both wine/drive_c/users/mythic and mobile before launching; no automatic Cloud conflict resolution. Test touch acceleration, Turing Complete and actual Cloud save coherence on device.
+- Pending project follow-up: shared infrastructure branch and cross-branch global agent guidance, as previously approved. The artifact gate is now satisfied; record device validation separately, do not merge features or mutate existing PRs. No infrastructure restructuring performed in this status check.
+
+---
+
 # BCD IPA build runbook — permanent cross-version checklist
 
 Last reviewed: 2026-11-25. Maintainers and coding agents: read this file and [CI-LESSONS.md](CI-LESSONS.md) BEFORE changing or building a BCD version. The user requires that failures from earlier builds be retained and prevented, not rediscovered. This is the complete first-build-to-current run ledger for the 0.1.712 upstream-Cloud branch (#47–62), plus the verified prior IPA baseline. It is not a claim to have audited every historical run of every branch.
@@ -34,6 +48,8 @@ First fatal named step from actual Actions jobs; step numbers change as checks m
 | [63](https://github.com/sky9662/bcd-games/actions/runs/45610481322) | 91 round 624 log lines | Previous fix changed exact mandatory DLL verifier command from inline to YAML block; restore original step, add separate strict shadow verification | Existing assertion and stage controls checked against repaired workflow; CI pending |
 
 | [65](https://github.com/sky9662/bcd-games/actions/runs/45633943883) | 896 Steam for Windows | Missing untracked docs/STEAM_DESKTOP.md only; explicit documentation exception | DXC restored, OpenGL and all 44 named DLLs verified, FEX lean passed; fix pending CI |
+
+| [66](https://github.com/sky9662/bcd-games/actions/runs/45652561853) | SUCCESS | Both unsigned IPAs verified and uploaded | CI complete; device testing pending |
 
 ## Mandatory workflow for every future version
 
@@ -85,9 +101,9 @@ Use `--index` for staged bytes locally; CI checkout uses no flag. Run the queue 
 
 ## Pending project task — shared IPA infrastructure (user approved 2026-11-25)
 
-**Status: pending; blocked on successful current IPA build and payload verification.** Do not restructure branches, merge feature branches, or modify the active workflow while the current IPA is being built. After the verified artifact is available, use the exact successful source SHA as evidence for separating infrastructure; do not assume a failed run or a source-only check establishes a known-good baseline.
+**Status: pending; successful IPA build and payload verification now confirmed by Run #66. Device testing and infrastructure separation remain pending.** Do not restructure branches, merge feature branches, or modify the active workflow while the current IPA is being built. After the verified artifact is available, use the exact successful source SHA as evidence for separating infrastructure; do not assume a failed run or a source-only check establishes a known-good baseline.
 
-- [ ] Record the verified IPA run, artifact, source SHA, test outcomes, explicit skips, toolchain pins and cache metadata.
+- [x] Record the verified IPA run, artifact, source SHA, test outcomes, explicit skips and confirmed cache restores (Run #66 below; retain source-pinned toolchain metadata).
 - [ ] Inventory independent CI fixes and feature-specific changes against the matching official upstream release. Separate mixed commits by reviewing their diffs; do not copy the entire combined feature tree.
 - [ ] Create a dedicated `build/ipa-infrastructure` branch from an appropriate upstream base containing only shared build workflow improvements, dependency recovery, source/SDK/toolchain pins, cache strategy, regression tests, verification tools and persistent build documentation. Separate generic infrastructure from feature-specific payload assertions; retain strict checks appropriate to each build.
 - [ ] Validate the infrastructure branch independently. Confirm a build without custom features works, and that a separate test branch can inherit infrastructure and one isolated feature without acquiring unrelated features. Record resulting commits, run/artifact evidence and documented migration procedure for later upstream versions.
