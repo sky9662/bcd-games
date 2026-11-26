@@ -868,7 +868,9 @@ check('the config catalog (generator and generated Swift) has the entry, default
 policy = (root / 'app/Madeira/GameRecommendationsList.swift').read_text()
 check('the recommendations policy lets a list set the switch, 0 or 1 only',
       policy.count('"MADEIRA_X86_FAULT_DUMP"') == 2 and re.search(r'case "MADEIRA_X86_FAULT_DUMP":(?:\n\s*//[^\n]*)*\n\s*guard value == "0" \|\| value == "1"', policy) is not None)
-ci = (root / '.github/workflows/build-ipa.yml').read_text()
+from workflow_commands import workflow_commands
+
+ci = workflow_commands((root / '.github/workflows/build-ipa.yml').read_text())
 check('build-ipa.yml runs this check', 'python3 tests/host/check-x86-fault-diag.py' in ci and ci.count('check-x86-fault-diag.py') == 1)
 
 wine = Path(os.environ.get('WINE_SRC', root / 'wine'))

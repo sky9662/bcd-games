@@ -210,7 +210,9 @@ with tempfile.TemporaryDirectory(prefix='madeira-yield-mode-run-') as d:
               'the adaptive sleep after yield-streak back-to-back yields is unchanged (%s, %s)' % (s, p))
         check(q and q[1] == 17 and q[4] == 383, 'and comes first in the other modes too (%s)' % (q,))
 
-ci = (root / '.github/workflows/build-ipa.yml').read_text()
+from workflow_commands import workflow_commands
+
+ci = workflow_commands((root / '.github/workflows/build-ipa.yml').read_text())
 step = 'python3 tools/patch-wine-yield-mode.py wine/dlls/ntdll/unix/sync.c'
 check(step in ci and ci.index('python3 tools/patch-wine-lock-orphan.py') < ci.index(step) < ci.index('- name: Build ntdll-unix'),
       'CI patches unix sync.c before ntdll-unix is built')

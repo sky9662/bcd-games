@@ -39,7 +39,9 @@ spec = importlib.util.spec_from_file_location("d3dxhr", root / "tools/patch-wine
 P = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(P)
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 step = wf.index("      - name: Patch wine d3dx10/d3dx11 compile functions to write pHResult\n")
 check("CI runs this check and applies the patch before the i386 farm is built",
       "python3 tests/host/check-wine-d3dx-hresult.py\n          python3 tools/patch-wine-d3dx-hresult.py wine\n" in wf[step:step + 500]

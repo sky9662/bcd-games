@@ -41,7 +41,9 @@ def load(name, rel):
 P = load("keywordnames", "tools/patch-wine-vkd3d-keyword-names.py")
 PT = load("pointident", "tools/patch-wine-vkd3d-point-ident.py")
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 step = wf.index("      - name: Patch wine vkd3d-shader to read more HLSL keywords as names\n")
 check("CI runs this check and applies the patch after the point patch and before the i386 farm is built",
       "python3 tests/host/check-vkd3d-keyword-names.py\n          python3 tools/patch-wine-vkd3d-keyword-names.py wine\n" in wf[step:step + 500]

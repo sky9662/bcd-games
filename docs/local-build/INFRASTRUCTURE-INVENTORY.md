@@ -1,0 +1,117 @@
+# Extraction inventory
+
+Official base: `f811dd05a9183cda20ffd3956cb1958cafe654f7`. Run #66 generic fixes: `2fa14a0b1fcdd983f51897ff425e5f2c2ecdf917`. No app files or submodule gitlinks changed.
+
+## Deliberately excluded combined-feature paths
+
+- `app/BCDPreview/BCDSettingsPreviewData.swift`
+- `app/Madeira.xcodeproj/project.pbxproj`
+- `app/Madeira/BCDAimZone.swift`
+- `app/Madeira/BCDInputMenu.swift`
+- `app/Madeira/BCDInputPage.swift`
+- `app/Madeira/BCDInputProfile.swift`
+- `app/Madeira/BCDSettingsLive.swift`
+- `app/Madeira/BCDSettingsSections.swift`
+- `app/Madeira/BCDTouchAcceleration.swift`
+- `app/Madeira/BCDTouchExtrasLive.swift`
+- `app/Madeira/ContentView.swift`
+- `app/Madeira/MadeiraApp.swift`
+- `app/Madeira/SteamCloud.swift`
+- `docs/UPSTREAM-CLOUD-CODEX-HANDOFF.md`
+- `tests/host/bcd_aim_checks.swift`
+- `tests/host/check-bcd-players.py`
+- `tests/host/check-bcd-touch-extras.py`
+- `tests/host/check-fex-callret-lean.py`
+- `tests/host/check-profile-unification.py`
+- `tests/host/check-steam-cloud.py`
+- `tests/host/check-steam-remotecache.py`
+- `tests/host/check-turing-exec-recheck.py`
+- `tools/build-xtajit64.sh`
+- `tools/patch-fex-ios-exec-recheck.py`
+- `tools/verify-upstream-cloud-ipa.py`
+
+## Generic paths copied unchanged
+
+- `.gitattributes` (3aebbe75036db7df70a446c5f5f7a19cb6ddbdaa)
+- `.gitignore` (ad2cb576ac8a8ee77ab2608b09415067520a7de9)
+- `tests/host/check-d3d11-small-rings.py` (925c0bd1d8b613806fbbdfe9de7f89b643f6f3e4)
+- `tests/host/check-dinput-cdecl-callbacks.py` (427cf71c5c4edbb48c13dc2bdadf6d0bc2827678)
+- `tests/host/check-dock-ceg-prepare.py` (514d2bc02bc39e467cb88d50e8578d60bcb6c61a)
+- `tests/host/check-dock-ceg-service-restart.py` (160272fc7a16396cc1514e0d8225cbe210395453)
+- `tests/host/check-dock-install-dir-events.py` (fe7dfbdddd12b51fc8938209b46cf727b654cb84)
+- `tests/host/check-dock-keep-alive-tree.py` (572186c929eadf6ca8943de9698739609e292327)
+- `tests/host/check-dock-licence-ask.py` (a2d8fb7aaca93f6ff7aab93736d083197296d306)
+- `tests/host/check-dock-licence-wait.py` (b897634474afb9b8b4447f1cf4472b99cdd8c337)
+- `tests/host/check-dock-registry-create.py` (fa274a7091eaec6491ad4442c5fce042d94aaad2)
+- `tests/host/check-dock-registry-events.py` (557bc213d9adb3dbdef2328982bf576d54e2a379)
+- `tests/host/check-dock-steam-views.py` (3607f5490d071ab377c5dffe0fe7e8e728e81a79)
+- `tests/host/check-dock-user-args.py` (ff488a12ff43b5bbfc5b53dde66d733b50433b1b)
+- `tests/host/check-fault-guard-guest-rip.py` (a27a1b8e116ef8c81389eaf745f7c7b6a4cf1145)
+- `tests/host/check-fault-loop-guest-progress.py` (0c950129dce7d1a0e72ca4c058e47d58e202df92)
+- `tests/host/check-gl-optin-tree.py` (85ab5eb8639d8f4e14e71b028cfa76043ddf80ea)
+- `tests/host/check-guest-log-redact.py` (66d3c35d29ffccf2c7f70fe439d03738b3149f3d)
+- `tests/host/check-guest-log-ring.py` (20b659cc5bd7ef5544ca13d8af5ef5cf62541d7f)
+- `tests/host/check-guest-log-secrets.py` (5652e1001649b461fc7c50622a10e38d5d56b079)
+- `tests/host/check-hide-host-version-plist.py` (816bfc04637ddfd9d883e08d777c77465e08829d)
+- `tests/host/check-host-arm-accessors.py` (9b3ab68596492a39b84fcd67c1362e42e251e2d9)
+- `tests/host/check-ill-guest-diag.py` (67a95adeb3cbd06c6e8018d9da0fc247892f5568)
+- `tests/host/check-int3-x86-diag.py` (39a32a474ccd19a281aaa095d6d5fc1bafde4555)
+- `tests/host/check-kk-vt-interp.py` (ab409438b98cc9f0273400e9c86ab4c6612f06c9)
+- `tests/host/check-lock-orphan-default.py` (f95bb65c554a6a28dc5a97224c999738ecf53595)
+- `tests/host/check-moltenvk-patched.py` (1e8c83952d7548d1b6d4194474c85d0964062a14)
+- `tests/host/check-noexec-who.py` (b6783875f47543186207f3b368a8d56e46b2db18)
+- `tests/host/check-ntdll-sync.py` (66e20ea14ed376925a52f3be14b33dabb3393a0c)
+- `tests/host/check-opengl-key.py` (8cfa0a76223e39309c35494741eca596ed5aa1dd)
+- `tests/host/check-optin-dlls.py` (8357305be593db380948e1cf7a03cf5cd68aa928)
+- `tests/host/check-orphan-safe-read.py` (b7a420106c0fdb4dfa0ef3342f62a322a7ffb98f)
+- `tests/host/check-ota-variants.py` (6fcc39b6e6711de46c6880a85562a1356502beea)
+- `tests/host/check-render-pass-traffic.py` (733785996ec632f6900f2b82d9b1b49fd5d25e82)
+- `tests/host/check-sc-native.py` (0550d8c724d4c112b321a5d01f15381b83114541)
+- `tests/host/check-steam-desktop.py` (6b81a75c21cf361f24f0c8016f65372292509269)
+- `tests/host/check-vk-fps-cap.py` (1d4c22c3349003da01aa5f257dbea3a396aebc34)
+- `tests/host/check-vk-fps-pacing.py` (32aa129c56ef26c5e65b10f948db6208dd486f08)
+- `tests/host/check-vkd3d-hlsl-fail-dump.py` (f10ccacc7ba8f9056ed4425293c7890582bb5500)
+- `tests/host/check-vkd3d-keyword-names.py` (652afabaf0c731a806ce252d51c81d64b85820b7)
+- `tests/host/check-vkd3d-loop-fallback.py` (abc3fcdb83be62d5c0cad7c9bbb984635ef0ad76)
+- `tests/host/check-vkd3d-point-ident.py` (8e7194a8caef2f2432dfc9392bec5859881c9f1d)
+- `tests/host/check-vkd3d-register-target.py` (a1376b5c2db7293fe5c51931c946155ef8f3136b)
+- `tests/host/check-vt-interp-clock.py` (93b2b71b48583d11c499a5e3c74a3df414052058)
+- `tests/host/check-vt-interp-queue.py` (fe733d8e21956ebd77e8d86e16a99b3b513b1ad6)
+- `tests/host/check-vt-interp.py` (75d02ea23592b1e7fcdb5b696ff7d7e4227c73c6)
+- `tests/host/check-vulkan-bcd.py` (12634e91a7e7f4b0c8827887def5a02eb0e8cd22)
+- `tests/host/check-w-sig-diagnostics.py` (a9b7315754311ab691a486ee1464abe38e19c9fd)
+- `tests/host/check-wc-old-prot.py` (933dc4140d159c70802c92445f3f956d42f93bef)
+- `tests/host/check-wine-d3dcompile-diag.py` (35a5903836183674ec86c82d61995940a85f33e8)
+- `tests/host/check-wine-d3dx-hresult.py` (b441423209c5b89a5c88e7437b184a07f19a2e8c)
+- `tests/host/check-wine-dir-storm.py` (46445f615d13d0aac9d8905eed21e2c8fbf0ec76)
+- `tests/host/check-wine-dns-refuse-crash.py` (a3518b4404a8076912d461b1e466d6ca13af8d9c)
+- `tests/host/check-wine-enumfonts-facename.py` (3a1dcec3eb8707cdb4da5cc2a3223f0731b1c57e)
+- `tests/host/check-wineserver-object-open-trace.py` (3ca215cc11d604dc52b457cfd351fa179497bcf2)
+- `tests/host/check-wineserver-proc-log.py` (5cd4715acdda204b6ab7a0497f474e89ff4dcfc5)
+- `tests/host/check-workflow-commands.py` (e61e24f7207e7470e47ace45850f5c82e529d0af)
+- `tests/host/check-x86-fault-diag.py` (c529533a6862d44c2e489d8f327408505b5505e0)
+- `tests/host/check-xaudio2-callbacks.py` (b733c7b91772c4d0a0258913e6f4a9227a34ca94)
+- `tests/host/check-yield-mode.py` (571682f7ae0b7cd136861b9a3a78b7b28700cd2a)
+- `tests/host/dxmt_base.py` (d3b1563dd4548b4952d386efe71faf54df2986db)
+- `tests/host/fexpatch_eval.py` (6406bf49c60d2d2f9ce0aa6a896c433f3ca378fd)
+- `tests/host/vk_fps_cap_harness.py` (6e1627e2972abedc9ad80c4ab7bca178d8f06fe8)
+- `tests/host/vt_interp_clock.h` (18bf4a660700e1f4d8b0921f1e080db982101fc7)
+- `tests/host/vt_interp_harness.m` (4b0e21b4b0084dfe7608c4e9a42c642e30a4f261)
+- `tests/host/vt_interp_queue_gate.h` (091be83688d1973512054510ce059a0e27fb6b1d)
+- `tests/host/vt_interp_queue_gate_test.c` (5ca5e997f2b1d8ee97ac97e029804f8711b6cbe9)
+- `tests/host/workflow_commands.py` (6b5c1f88df363e78038a87f54663912c31c9c54c)
+- `third-party/cnc-ddraw/README.md` (94b6d390854deeeb0f387adc748a4c50cb35bea6)
+- `third-party/d3d8to9/LICENSE.md` (194626b5ba84cdc5640bae0e051db0d0c0e3a72d)
+- `third-party/d3d8to9/README.md` (6ff383dcf1a92256c2ed80bf853987723428f939)
+- `tools/build-dxcompiler.sh` (627fcf134c90843fc86a19ddd669a60d59a9587f)
+- `tools/build-wine-extra-dlls.sh` (bd3ae4f8550fdcf2fd425631848a4cf0a66aae67)
+- `tools/check-optin-shadowing.py` (093b9868dafa931bc8df423cb629bd8012f9d719)
+- `tools/check-steam-desktop-doc.py` (d89080a6936b1f35340905bdb964f1b8eb4ddd46)
+- `tools/check-vendored-manifests.py` (9425b8820d2787d7fb35377d8162f084047802de)
+- `tools/check-wine-gl-optin-tree.py` (72fa7b732cad5a22f5068090cce0f1afa24b4f34)
+- `tools/ci-optional-fixture-check.py` (caed1c24f76d2219c649a4e8c7a7b0b75c59c4c6)
+- `tools/ci-preflight-host-fixtures.py` (22640019ea8b1276f867bb2289d6c3a7a6a67764)
+- `tools/fetch-host-test-baselines.py` (c37aff5581ee89a3acfc5bd299b3bdacb7829099)
+- `tools/restore-metal-shader-converter.sh` (dc686858b4dd8215b9f17f157fc37bf5543369cc)
+
+Adapted workflow and publication-contract files restore official alias-capacity testing and FEX build script, remove custom Cloud/Turing requirements, use generic unsigned artifact and verification names. New verifier and isolation test enforce a clean baseline; historical docs retain feature-specific history, not generic requirements. Independent CI pending.

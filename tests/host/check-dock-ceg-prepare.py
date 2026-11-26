@@ -57,7 +57,9 @@ RETRY = load("cegretry", "tools/patch-dock-ceg-retry.py")
 PREP = load("cegprep", "tools/patch-dock-ceg-already-prepared.py")
 
 # ------------------------------------------------------------------------------------------------------------------ 1. wiring
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 step = wf[wf.index("      - name: Build Madeira Dock host\n"):]
 step = step[:step.index("\n\n")]
 order = ["tools/patch-dock-game-scm.py", "tools/patch-dock-keep-alive.py", "tools/patch-dock-steam-readback.py",

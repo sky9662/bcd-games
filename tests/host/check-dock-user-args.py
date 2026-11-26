@@ -31,7 +31,9 @@ spec = importlib.util.spec_from_file_location("userargs", root / "tools/patch-do
 P = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(P)
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 step = wf[wf.index("      - name: Build Madeira Dock host\n"):]
 step = step[:step.index("\n\n")]
 check("CI runs this check and applies the patch after the other launch.c patches, before the Dock build, without failing the step",

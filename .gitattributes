@@ -1,2 +1,6 @@
 app/Frameworks/StikJIT.xcframework/** -whitespace
 recommended/* -text
+# Upstream documentation is pinned byte-for-byte by third-party SHA256SUMS.
+third-party/d3d8to9/LICENSE.md -whitespace
+third-party/d3d8to9/README.md -whitespace conflict-marker-size=32
+third-party/cnc-ddraw/README.md -whitespace

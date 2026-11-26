@@ -36,7 +36,9 @@ def load(name):
     return module
 
 
-wf = (root / '.github/workflows/build-ipa.yml').read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / '.github/workflows/build-ipa.yml').read_text())
 step = 'python3 tools/patch-wine-lock-orphan-default.py wine/dlls/ntdll/unix/sync.c'
 check('the workflow checks and applies it after the opt-in lock-orphan script and the waiter reads',
       'python3 tests/host/check-lock-orphan-default.py\n          ' + step in wf

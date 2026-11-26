@@ -4,6 +4,7 @@
 No Apple signing material, network requests or outgoing mail are used here.
 Real codesign and IPA packaging run in the macOS IPA workflow.
 """
+import argparse
 import hashlib
 import html
 from html.parser import HTMLParser
@@ -18,6 +19,9 @@ import zipfile
 from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parents[2]
+parser = argparse.ArgumentParser()
+parser.add_argument("--unsigned-workflow", action="store_true", help="Verify the explicit unsigned-only CI contract; keep every packaging and signer regression")
+args = parser.parse_args()
 spec = importlib.util.spec_from_file_location("ota_variants", ROOT / "tools/ota-variants.py")
 ota = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ota)
@@ -183,8 +187,8 @@ with tempfile.TemporaryDirectory(prefix="madeira-ota-contracts-") as directory:
 subprocess.run(["bash", "-n", str(ROOT / "tools/sign-and-publish-ota.sh")], check=True)
 workflow = (ROOT / ".github/workflows/build-ipa.yml").read_text()
 assert workflow.count("xcodebuild -project app/Madeira.xcodeproj") == 1
-assert workflow.count("run: bash tools/sign-and-publish-ota.sh") == 1
-assert "build-out/Madeira2-0.1.${{ steps.bn.outputs.n }}-unsigned.ipa" in workflow
+from ipa_workflow_contract import check_publication_workflow
+check_publication_workflow(workflow, unsigned=args.unsigned_workflow)
 # madeira-bcd FORK-ONLY: the version is the fork's one build-number sequence
 # (docs/local-build/BUILD-NUMBER), read once before anything is built; GitHub's
 # run_number appears only in that step's notice.
@@ -207,7 +211,7 @@ assert signer.index('for name in "${NAMES[@]}"; do\n  for try in 1 2 3 4 5; do\n
 assert '[ -n "${OTA_IPA_UPLOADER:-}" ] && [ "${GITHUB_ACTIONS:-}" != true ]' in signer
 # an IPA that fails all its tries stops the script before the mail (no two-button mail for a missing app)
 assert 'did not upload after 5 tries"; exit 1; }' in signer
-print("PASS: one archive, one paired signing invocation and one email invocation; shell syntax valid")
+print("PASS: one archive, explicit unsigned-only or paired-OTA workflow contract, one signer email invocation; shell syntax valid")
 
 # Run the actual shell orchestration with local tool doubles. The macOS-only
 # signing commands are substituted; storage, links and SMTP never use a network.

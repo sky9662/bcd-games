@@ -1259,7 +1259,9 @@ check('"$SHIP/ntdll.dll' not in sh.replace('"$SHIP/ntdll.dll" ]', '').replace('"
       '"$SHIP/ntdll.dll"; then', ''), 'the shipped ntdll.dll is only read, never written')
 check(sh.index('rm -f "$R/wine/dlls/ucrtbase/x64math.c"') < sh.index('if [ -n "$NTS" ]; then'),
       'built from the tree the other patches have been undone in')
-ci = (root / '.github/workflows/build-ipa.yml').read_text()
+from workflow_commands import workflow_commands
+
+ci = workflow_commands((root / '.github/workflows/build-ipa.yml').read_text())
 check('- name: Check ntdll-sync\n        run: python3 tests/host/check-ntdll-sync.py' in ci and
       ci.index('- name: Check quiet-log') < ci.index('- name: Check ntdll-sync'), 'CI runs this check after quiet-log')
 check('python3 tools/patch-wine-ntdll-sync.py --verify app/Madeira/arm64ec-windows/ntdll-sync.dll' in ci,

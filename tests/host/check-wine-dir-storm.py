@@ -36,7 +36,9 @@ spec = importlib.util.spec_from_file_location("dirstorm", root / "tools/patch-wi
 P = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(P)
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 step = wf.index("      - name: Patch wine with the directory-listing census\n")
 check("CI runs this check and then the patch on file.c, after the other file.c patches and before the ntdll unix library is built",
       "python3 tests/host/check-wine-dir-storm.py\n          python3 tools/patch-wine-dir-storm.py wine/dlls/ntdll/unix/file.c\n" in wf[step:step + 500]

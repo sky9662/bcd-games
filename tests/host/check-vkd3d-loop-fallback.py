@@ -48,7 +48,9 @@ spec = importlib.util.spec_from_file_location("loopfallback", root / "tools/patc
 P = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(P)
 
-wf = (root / ".github/workflows/build-ipa.yml").read_text()
+from workflow_commands import workflow_commands
+
+wf = workflow_commands((root / ".github/workflows/build-ipa.yml").read_text())
 STEP = "      - name: Patch wine vkd3d-shader to write a loop it cannot unroll as guarded copies (opt-in)\n"
 step = wf.find(STEP)
 check("CI runs this check and applies the patch before the i386 farm is built",

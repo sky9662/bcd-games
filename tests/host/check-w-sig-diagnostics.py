@@ -123,6 +123,7 @@ HARNESS = r'''
    macro; the stand-ins are for the Intel host, which has neither. */
 #if !defined(__aarch64__)
 typedef struct { uint64_t __x[29]; uint64_t __fp, __lr, __sp, __pc; uint32_t __cpsr; } arm_thread_state64_t;
+#undef __darwin_arm_thread_state64_get_pc
 #define __darwin_arm_thread_state64_get_pc(s) ((s).__pc)
 #endif
 #define STDERR_FILENO 2
